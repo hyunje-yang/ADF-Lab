@@ -1,776 +1,774 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Lab 8: Drag &amp; Lift</title>
+<title>Lab 8: 떨어지는 공의 속도</title>
 <style>
 :root{
   --bg:#f5f6f8; --card:#ffffff; --ink:#14171c; --sub:#5b6472; --line:#dfe3e9;
   --accent:#1857c4; --accent-ink:#ffffff; --ok:#0f7a4a; --warn:#a35b00; --bad:#b4232a;
-  --cyan:#0d8ea8; --mag:#b3239c;
+  --top:#16a34a; --bot:#dc2626; --ball:#f59e0b;
 }
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){--bg:#12151a;--card:#1b1f26;--ink:#eef1f5;--sub:#9aa4b2;--line:#2c323b;
-  --accent:#4d8dff;--accent-ink:#07101f;--ok:#4fd08a;--warn:#e0a34a;--bad:#ff7b7b;
-  --cyan:#3fc9e6;--mag:#ee7ad6;color-scheme:dark;}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#12151a; --card:#1b1f26; --ink:#eef1f5; --sub:#9aa4b2; --line:#2c323b;
+  --accent:#4d8dff; --accent-ink:#07101f; --ok:#4fd08a; --warn:#e0a34a; --bad:#ff7b7b;
+  --top:#4ade80; --bot:#f87171; --ball:#fbbf24; color-scheme:dark; }
 }
-:root[data-theme="dark"]{--bg:#12151a;--card:#1b1f26;--ink:#eef1f5;--sub:#9aa4b2;--line:#2c323b;
-  --accent:#4d8dff;--accent-ink:#07101f;--ok:#4fd08a;--warn:#e0a34a;--bad:#ff7b7b;
-  --cyan:#3fc9e6;--mag:#ee7ad6;color-scheme:dark;}
+:root[data-theme="dark"]{ --bg:#12151a; --card:#1b1f26; --ink:#eef1f5; --sub:#9aa4b2; --line:#2c323b;
+  --accent:#4d8dff; --accent-ink:#07101f; --ok:#4fd08a; --warn:#e0a34a; --bad:#ff7b7b;
+  --top:#4ade80; --bot:#f87171; --ball:#fbbf24; color-scheme:dark; }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html{-webkit-text-size-adjust:100%;}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
 body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
-     font-size:16px;line-height:1.55;padding-bottom:env(safe-area-inset-bottom);}
+     font-size:16px;line-height:1.6;padding-bottom:env(safe-area-inset-bottom);word-break:keep-all;}
 header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);
-       padding:10px 14px;display:flex;align-items:center;gap:10px;
-       padding-top:calc(10px + env(safe-area-inset-top));}
+       padding:10px max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));
+       display:flex;align-items:center;gap:10px;padding-top:calc(10px + env(safe-area-inset-top));}
 header .ttl{font-weight:700;font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 header .tag{font-size:12px;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 9px;font-weight:700;}
-header .hbtn{flex:none;border:1px solid var(--line);background:var(--card);color:var(--accent);
+header .hbtn{flex:none;border:1px solid var(--line);background:var(--card);color:var(--accent);text-decoration:none;
        font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px;cursor:pointer;line-height:1;}
-header .hbtn:active{background:var(--bg);}
-main{padding:14px 14px 90px;max-width:640px;margin:0 auto;}
+main{padding:14px max(14px,env(safe-area-inset-right)) 60px max(14px,env(safe-area-inset-left));max-width:640px;margin:0 auto;}
 .screen{display:none;} .screen.on{display:block;}
-h2{font-size:19px;margin:2px 0 10px;line-height:1.35;}
-h3{font-size:15px;margin:18px 0 6px;color:var(--sub);}
+h1{font-size:23px;margin:4px 0 8px;line-height:1.35;}
+h2{font-size:19px;margin:2px 0 10px;line-height:1.4;}
+h3{font-size:15px;margin:0 0 6px;}
 p{margin:8px 0;}
 .sub{color:var(--sub);font-size:14px;}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0;}
-.card.tight{padding:10px 12px;}
 button{font:inherit;}
-.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 .btn{display:block;width:100%;padding:15px 16px;border-radius:12px;border:1px solid var(--accent);
      background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px;margin-top:10px;cursor:pointer;text-align:center;}
 .btn.ghost{background:transparent;color:var(--accent);}
 .btn.sm{padding:11px 12px;font-size:15px;}
 .btn:disabled{opacity:.4;}
+.btn:focus-visible,.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
 .row{display:flex;gap:10px;} .row>*{flex:1;min-width:0;}
-.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--sub);}
-.pill.ok{color:var(--ok);border-color:var(--ok);} .pill.warn{color:var(--warn);border-color:var(--warn);} .pill.bad{color:var(--bad);border-color:var(--bad);}
-ul{padding-left:20px;margin:8px 0;} li{margin:5px 0;}
-table{width:100%;border-collapse:collapse;font-size:14px;}
-th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right;}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:10px;}
+.steps li{display:flex;gap:12px;align-items:flex-start;}
+.steps .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0;}
+.opt{display:block;text-align:left;border:2px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:12px;padding:12px;cursor:pointer;}
+.opt b{display:block;font-size:15px;}
+.opt span{display:block;font-size:13px;color:var(--sub);line-height:1.45;margin-top:2px;}
+.opt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;}
+.demo{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.demo .opt{padding:0;overflow:hidden;}
+.demo img{display:block;width:100%;aspect-ratio:208/300;object-fit:cover;object-position:center 30%;}
+.demo .cap{padding:10px 12px;}
+.tips{margin:6px 0 0;padding-left:20px;} .tips li{margin:6px 0;}
+.canvas{display:block;width:100%;height:auto;border-radius:10px;background:#000;touch-action:manipulation;}
+.zoom{border:2px solid var(--accent);}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--sub);margin:6px 0 0;flex-wrap:wrap;}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;}
+.progress{height:8px;background:var(--line);border-radius:4px;margin:10px 0;overflow:hidden;}
+.progress .bar{height:100%;width:0;background:var(--accent);border-radius:4px;transition:width .2s;}
+.big{font-size:44px;font-weight:800;line-height:1.1;margin:6px 0 2px;font-variant-numeric:tabular-nums;}
+.big small{font-size:20px;font-weight:700;margin-left:4px;color:var(--sub);}
+.pill{display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid currentColor;margin-top:6px;}
+.pill.ok{color:var(--ok);} .pill.warn{color:var(--warn);} .pill.bad{color:var(--bad);}
+.chart{display:block;width:100%;height:auto;}
+.calc{background:var(--bg);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14.5px;line-height:1.75;font-variant-numeric:tabular-nums;}
+.calc .k{color:var(--sub);}
+table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums;}
+th,td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;}
 th:first-child,td:first-child{text-align:left;}
-thead th{color:var(--sub);font-weight:600;font-size:12.5px;}
-td.big{font-weight:700;}
-.kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed var(--line);}
-.kv:last-child{border:none;}
-.kv .k{color:var(--sub);font-size:14px;}
-.kv .v{font-weight:600;font-size:14px;}
-label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px;font-weight:600;}
-input[type="number"],select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:16px;font-family:inherit;}
-input:focus,select:focus{border-color:var(--accent);}
-.eq{font-family:Georgia,"Times New Roman",serif;font-style:italic;background:var(--bg);padding:8px 12px;border-radius:8px;margin:8px 0;font-size:15px;line-height:1.7;overflow-wrap:anywhere;}
-.result-val{font-size:22px;font-weight:700;margin:4px 0;}
-.result-label{font-size:12px;color:var(--sub);margin:0;}
-.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;margin:10px 0;}
-.result-box{padding:10px;background:var(--bg);border-radius:10px;}
-.pct-diff{font-size:14px;font-weight:700;}
-.pct-diff.ok{color:var(--ok);} .pct-diff.warn{color:var(--warn);} .pct-diff.bad{color:var(--bad);}
-canvas{display:block;border-radius:10px;max-width:100%;}
-.progress{height:6px;background:var(--line);border-radius:3px;margin:10px 0;overflow:hidden;}
-.progress .bar{height:100%;background:var(--accent);border-radius:3px;transition:width 0.2s;}
-.tap-hint{position:absolute;color:var(--accent);font-size:13px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.5);}
-.marker-line{position:absolute;left:0;right:0;height:2px;background:var(--accent);pointer-events:none;}
-.canvas-wrap{position:relative;display:inline-block;width:100%;}
-.canvas-wrap canvas{width:100%;height:auto;}
-.sens-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
-.sens-row input[type="range"]{flex:1;accent-color:var(--accent);}
-.sens-row .val{font-weight:700;font-size:14px;min-width:36px;text-align:center;}
-.overlay-toggle{display:flex;align-items:center;gap:8px;font-size:14px;margin:8px 0;cursor:pointer;color:var(--sub);}
-.overlay-toggle input{accent-color:var(--accent);}
+thead th{color:var(--sub);font-weight:600;font-size:13px;}
+details{margin-top:10px;} summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:14px;}
+.src{font-size:13px;color:var(--sub);line-height:1.6;}
+.src li{margin:4px 0;}
+.edit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.edit label{font-size:12.5px;color:var(--sub);font-weight:600;}
+.edit input{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:15px;}
+.err{color:var(--bad);font-weight:700;}
+input[type=range]{width:100%;accent-color:var(--accent);}
+#vid{position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none;}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+/* 폰에서 좌우로 흔들리지 않게 */
+html,body{overflow-x:hidden;max-width:100%}
+@supports (overflow:clip){html,body{overflow-x:clip}}
+main>*,header>*,section>*,figure>*,.card>*{min-width:0;max-width:100%}
+p,li,figcaption,blockquote,code,a,h1,h2,h3{overflow-wrap:anywhere;word-break:keep-all}
+td{overflow-wrap:break-word}
+img,svg,video,canvas{max-width:100%;height:auto}
+pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
 </style>
 </head>
 <body>
 <header>
-  <span class="ttl">Lab 8: Drag &amp; Lift</span>
+  <span class="ttl">Lab 8 · 떨어지는 공의 속도</span>
   <span class="tag">CE 319F</span>
-  <button class="hbtn" onclick="location.href='../'">Home</button>
+  <a class="hbtn" href="../">목록</a>
 </header>
 
 <main>
-<!-- ===== INTRO ===== -->
-<div class="screen on" id="s-intro">
-  <h2>Drag &amp; Lift</h2>
-  <p class="sub">Record a sphere falling through fluid. The app tracks it automatically and calculates terminal velocity, Re, and C<sub>D</sub>.</p>
-
+<!-- ===== 1. 처음 ===== -->
+<section class="screen on" id="s-home">
+  <h1>공이 떨어지는 속도를<br>영상으로 재요</h1>
+  <p class="sub">관 속 액체에 공을 떨어뜨리는 장면을 찍어 올리면, 앱이 공을 따라가서 초록 선과 빨간 선 사이를 지나는 속도를 알려 줘요. 초시계로 시간을 잴 필요가 없어요.</p>
   <div class="card">
-    <h3 style="margin-top:0">How It Works</h3>
-    <ol>
-      <li><strong>Record</strong> a slo-mo video of the ball dropping through the tube</li>
-      <li><strong>Calibrate</strong> by tapping the two marker lines on the tube</li>
-      <li>The app <strong>auto-tracks</strong> the ball frame by frame</li>
-      <li>Get <strong>velocity profile</strong>, terminal velocity, Re, and C<sub>D</sub></li>
+    <ol class="steps">
+      <li><span class="n">1</span><div><b>슬로모로 찍기</b><br><span class="sub">관 전체와 두 선이 보이게, 폰을 고정해서 찍어요.</span></div></li>
+      <li><span class="n">2</span><div><b>두 선 표시하기</b><br><span class="sub">화면에서 초록 선과 빨간 선을 한 번씩 눌러요.</span></div></li>
+      <li><span class="n">3</span><div><b>결과 보기</b><br><span class="sub">속도, 레이놀즈 수, 항력계수가 자동으로 나와요.</span></div></li>
     </ol>
   </div>
+  <button class="btn" id="go-demo">데모 영상으로 먼저 해 보기</button>
+  <button class="btn ghost" id="go-own">내 영상으로 하기</button>
+</section>
 
-  <div class="card">
-    <h3 style="margin-top:0">Theory</h3>
-    <p>At terminal velocity, drag force = submerged weight:</p>
-    <div class="eq">F<sub>D</sub> = &frac12; C<sub>D</sub> &rho; V<sup>2</sup> A = (&rho;<sub>s</sub> &minus; &rho;<sub>f</sub>) &middot; (&pi;/6) D&sup3; &middot; g</div>
-    <p>For smooth spheres with Re &lt; 1000:</p>
-    <div class="eq">C<sub>D</sub> = 24/Re + 3/&radic;Re + 0.34</div>
+<!-- ===== 2. 데모 고르기 ===== -->
+<section class="screen" id="s-demo">
+  <h2>어떤 데모를 볼까요?</h2>
+  <p class="sub">실험실에서 아이폰 슬로모로 찍은 실제 영상이에요.</p>
+  <div class="demo">
+    <button class="opt" data-demo="gly">
+      <img src="demo/gly_thumb.jpg" alt="글리세린 관 사진">
+      <div class="cap"><b>글리세린 관</b><span>끈적해서 공이 아주 천천히 떨어져요.</span></div>
+    </button>
+    <button class="opt" data-demo="mix">
+      <img src="demo/mix_thumb.jpg" alt="글리세린과 물 관 사진">
+      <div class="cap"><b>글리세린+물 관</b><span>덜 끈적해서 공이 빨리 떨어져요.</span></div>
+    </button>
   </div>
+  <button class="btn ghost" data-go="s-home">← 처음으로</button>
+</section>
 
-  <button class="btn" onclick="show('s-setup')">Start &rarr;</button>
-</div>
-
-<!-- ===== SETUP ===== -->
-<div class="screen" id="s-setup">
-  <h2>Experiment Setup</h2>
-  <p class="sub">Select your test and enter fluid/sphere properties.</p>
-
+<!-- ===== 3. 내 영상 ===== -->
+<section class="screen" id="s-own">
+  <h2>내 영상으로 하기</h2>
   <div class="card">
-    <h3 style="margin-top:0">Fluid</h3>
-    <label for="fluid-sel">Select fluid</label>
-    <select id="fluid-sel" onchange="fillFluid()">
-      <option value="gly">Glycerin (&rho;=1235, &mu;=1.261)</option>
-      <option value="mix">Glycerin-Water Mix (&rho;=1192, &mu;=0.0055)</option>
-      <option value="custom">Custom</option>
-    </select>
+    <h3>이렇게 찍어 주세요</h3>
+    <ul class="tips">
+      <li>폰을 <b>세로</b>로 두고, 관 전체와 <b>초록 선·빨간 선</b>이 화면에 다 보이게 해요.</li>
+      <li>폰을 손에 들지 말고 <b>거치대나 벽에 기대 고정</b>해요. 흔들리면 속도가 틀려져요.</li>
+      <li>카메라 앱에서 <b>슬로모</b>를 고르고, 공을 넣기 직전에 시작해 공이 바닥에 닿으면 멈춰요.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>어느 관에 떨어뜨렸나요?</h3>
+    <div class="opts" id="opt-fluid">
+      <button class="opt on" data-v="gly"><b>글리세린</b><span>라벨 GLY 1.257</span></button>
+      <button class="opt" data-v="mix"><b>글리세린+물</b><span>라벨 GLY AND WATER 1.1306</span></button>
+    </div>
+    <h3 style="margin-top:14px">어떻게 찍었나요?</h3>
+    <div class="opts" id="opt-mode">
+      <button class="opt on" data-v="slomo"><b>아이폰 슬로모</b><span>실험실 기본 방법</span></button>
+      <button class="opt" data-v="normal"><b>보통 속도</b><span>일반 동영상</span></button>
+    </div>
+  </div>
+  <label class="btn" style="cursor:pointer">앨범에서 영상 고르기
+    <input type="file" accept="video/*" id="file-pick" hidden>
+  </label>
+  <button class="btn ghost" data-go="s-home">← 처음으로</button>
+</section>
+
+<!-- ===== 4. 선 표시 ===== -->
+<section class="screen" id="s-lines">
+  <h2 id="ln-title">두 선의 위치를 알려 주세요</h2>
+  <p id="ln-msg" class="sub"></p>
+  <canvas id="ln-main" class="canvas"></canvas>
+  <div class="legend"><span><i style="background:var(--top)"></i>위쪽 선 (초록)</span><span><i style="background:var(--bot)"></i>아래쪽 선 (빨강)</span></div>
+  <div id="ln-zoom-box" class="card" hidden>
+    <h3 id="ln-zoom-title">확대 화면</h3>
+    <p class="sub">파란 점선이 관 위의 선과 딱 겹치게 맞춰 주세요. 확대 화면을 눌러도 되고, 버튼으로 조금씩 옮겨도 돼요.</p>
+    <canvas id="ln-zoom" class="canvas zoom"></canvas>
     <div class="row">
-      <div><label for="f-rho">&rho;<sub>fluid</sub> (kg/m&sup3;)</label><input type="number" id="f-rho" value="1235" step="any"></div>
-      <div><label for="f-mu">&mu;<sub>fluid</sub> (N&middot;s/m&sup2;)</label><input type="number" id="f-mu" value="1.261" step="any"></div>
+      <button class="btn sm ghost" id="ln-up">▲ 위로</button>
+      <button class="btn sm ghost" id="ln-down">▼ 아래로</button>
+    </div>
+    <button class="btn" id="ln-ok">이 위치로 정하기</button>
+  </div>
+  <div id="ln-done" hidden>
+    <button class="btn" id="go-track">공 따라가기 시작</button>
+    <button class="btn ghost" id="ln-redo">선 다시 표시하기</button>
+  </div>
+  <button class="btn ghost" id="ln-back">← 뒤로</button>
+</section>
+
+<!-- ===== 5. 추적 중 ===== -->
+<section class="screen" id="s-run">
+  <h2>공을 따라가는 중이에요</h2>
+  <p class="sub" id="run-msg">준비 중…</p>
+  <div class="progress"><div class="bar" id="run-bar"></div></div>
+  <canvas id="run-view" class="canvas"></canvas>
+  <p class="sub">노란 원이 앱이 찾은 공 후보예요. 영상이 끝날 때까지 기다려 주세요.</p>
+</section>
+
+<!-- ===== 6. 결과 ===== -->
+<section class="screen" id="s-res">
+  <div id="res-err" class="card" hidden></div>
+  <div id="res-body">
+    <div class="card">
+      <h3>두 선 사이를 지난 평균 속도</h3>
+      <div class="big"><span id="r-v">–</span><small>cm/s</small></div>
+      <p id="r-sent"></p>
+      <span class="pill" id="r-check"></span>
+    </div>
+
+    <div class="card">
+      <h3>공의 위치</h3>
+      <canvas id="ch-pos" class="chart"></canvas>
+      <p class="sub">점들이 곧은 선 위에 놓이면 공이 같은 속도로 떨어진 거예요. 액체 속에서 공이 더 빨라지지도 느려지지도 않는 이 속도를 <b>종단 속도</b>(terminal velocity)라고 해요.</p>
+    </div>
+
+    <div class="card">
+      <h3>깊이에 따른 속도</h3>
+      <canvas id="ch-spd" class="chart"></canvas>
+      <p class="sub">회색 띠가 두 선 사이예요. 이 구간에서 그래프가 평평하면 공이 종단 속도에 도달한 상태에서 잰 거예요.</p>
+    </div>
+
+    <div class="card">
+      <h3>앱이 공을 제대로 따라갔나요?</h3>
+      <p class="sub">막대를 밀면서 노란 원이 공 위에 있는지 직접 확인해 보세요.</p>
+      <canvas id="pb" class="canvas"></canvas>
+      <input type="range" id="pb-k" min="0" max="0" value="0" aria-label="영상 위치">
+      <p class="sub" id="pb-t"></p>
+    </div>
+
+    <div class="card">
+      <h3>레이놀즈 수와 항력계수</h3>
+      <p class="sub"><b>레이놀즈 수</b>(Reynolds number, Re)는 공 주변 흐름에서 액체의 끈적임이 얼마나 큰 역할을 하는지 보여 주는 수예요. 작을수록 끈적임이 지배해요.</p>
+      <div class="calc" id="c-re"></div>
+      <p class="sub"><b>항력계수</b>(drag coefficient, C<sub>D</sub>)는 공이 받는 저항이 얼마나 큰지 나타내는 수예요. 종단 속도에서는 공의 무게에서 부력을 뺀 힘이 저항과 같아서, 잰 속도로 C<sub>D</sub>를 거꾸로 구할 수 있어요.</p>
+      <div class="calc" id="c-cd"></div>
+      <div class="tw"><table>
+        <thead><tr><th></th><th>Re</th><th>C<sub>D</sub> 측정</th><th>C<sub>D</sub> 식</th><th>차이</th></tr></thead>
+        <tbody><tr><td>이번 실험</td><td id="t-re"></td><td id="t-cdm"></td><td id="t-cdc"></td><td id="t-diff"></td></tr></tbody>
+      </table></div>
+      <p class="sub">C<sub>D</sub> 식은 매끈한 공에 대한 매뉴얼의 식이에요: C<sub>D</sub> = 24/Re + 3/√Re + 0.34 (Re &lt; 1000).</p>
+      <details>
+        <summary>계산에 쓴 값과 출처</summary>
+        <ul class="src" id="src-list"></ul>
+        <p class="src">조교님이 값을 바꾸고 싶으면 아래를 고치면 결과가 바로 다시 계산돼요.</p>
+        <div class="edit">
+          <div><label for="e-rhof">액체 밀도 (kg/m³)</label><input type="number" id="e-rhof" step="any"></div>
+          <div><label for="e-mu">액체 점성 (Pa·s)</label><input type="number" id="e-mu" step="any"></div>
+          <div><label for="e-d">공 지름 (mm)</label><input type="number" id="e-d" step="any"></div>
+          <div><label for="e-rhos">공 밀도 (kg/m³)</label><input type="number" id="e-rhos" step="any"></div>
+          <div><label for="e-gap">두 선 사이 거리 (cm)</label><input type="number" id="e-gap" step="any"></div>
+          <div><label for="e-slow">슬로모 배율</label><input type="number" id="e-slow" step="any"></div>
+        </div>
+      </details>
     </div>
   </div>
-
-  <div class="card">
-    <h3 style="margin-top:0">Sphere</h3>
-    <select id="sphere-sel" onchange="fillSphere()">
-      <option value="steel">Steel (&rho;=7820, D=3.94 mm)</option>
-      <option value="light">Light sphere (&rho;=2830, D=3.94 mm)</option>
-      <option value="alum">Aluminum (&rho;=2700, D=6.35 mm)</option>
-      <option value="custom">Custom</option>
-    </select>
-    <div class="row">
-      <div><label for="s-rho">&rho;<sub>sphere</sub> (kg/m&sup3;)</label><input type="number" id="s-rho" value="7820" step="any"></div>
-      <div><label for="s-d">D (mm)</label><input type="number" id="s-d" value="3.94" step="any"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-top:0">Slo-Mo Factor</h3>
-    <p class="sub">How much slower is the slo-mo section compared to real time? (iPhone 240fps &asymp; 4&times;, measured &asymp; 3.91&times;)</p>
-    <label for="slowf">Slow-motion factor</label>
-    <input type="number" id="slowf" value="4" step="any">
-  </div>
-
-  <button class="btn" onclick="saveSetup();show('s-video')">Record / Upload Video &rarr;</button>
-  <button class="btn ghost" onclick="show('s-intro')">&larr; Back</button>
-</div>
-
-<!-- ===== VIDEO ===== -->
-<div class="screen" id="s-video">
-  <h2>Upload Video</h2>
-  <p class="sub">Record or choose a slo-mo video of the ball falling through the tube.</p>
-
-  <div class="card">
-    <h3 style="margin-top:0">Record Now</h3>
-    <p class="sub">Opens your camera in slo-mo mode (set slo-mo in your camera app first).</p>
-    <label class="btn sm" style="cursor:pointer">
-      Record Video
-      <input type="file" accept="video/*" capture="environment" id="vid-capture" style="display:none" onchange="onVid(this)">
-    </label>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-top:0">Or Choose Existing</h3>
-    <label class="btn sm ghost" style="cursor:pointer">
-      Choose from Files
-      <input type="file" accept="video/*" id="vid-file" style="display:none" onchange="onVid(this)">
-    </label>
-  </div>
-
-  <div id="vid-preview" style="display:none" class="card">
-    <h3 style="margin-top:0">Preview</h3>
-    <video id="preview-player" controls playsinline style="width:100%;border-radius:8px;"></video>
-    <p class="sub" id="vid-info"></p>
-    <button class="btn" onclick="startCalibrate()">Calibrate Marker Lines &rarr;</button>
-  </div>
-
-  <button class="btn ghost" onclick="show('s-setup')">&larr; Back</button>
-</div>
-
-<!-- ===== CALIBRATE ===== -->
-<div class="screen" id="s-calib">
-  <h2>Calibrate</h2>
-  <p class="sub" id="calib-instruction">Tap the <strong>upper marker line</strong> on the tube (the first line the ball passes).</p>
-
-  <div class="canvas-wrap" id="calib-wrap">
-    <canvas id="calib-canvas"></canvas>
-    <div class="marker-line" id="line1" style="display:none"></div>
-    <div class="marker-line" id="line2" style="display:none"></div>
-  </div>
-
-  <div class="card" id="calib-dist-card" style="display:none">
-    <label for="marker-dist">Distance between markers (cm)</label>
-    <input type="number" id="marker-dist" value="31.6" step="any">
-    <p class="sub">Default 31.6 cm (1.04 ft, the red-green line distance on the tube).</p>
-    <button class="btn" onclick="startTracking()">Track Ball &rarr;</button>
-  </div>
-
-  <button class="btn ghost" onclick="show('s-video')">&larr; Back</button>
-</div>
-
-<!-- ===== TRACKING ===== -->
-<div class="screen" id="s-track">
-  <h2>Tracking</h2>
-  <p class="sub">Detecting the ball in each frame...</p>
-  <div class="progress"><div class="bar" id="track-bar" style="width:0%"></div></div>
-  <p class="sub" id="track-status">Preparing...</p>
-  <div class="canvas-wrap">
-    <canvas id="track-canvas"></canvas>
-  </div>
-
-  <div class="card" id="sens-card" style="display:none">
-    <h3 style="margin-top:0">Detection Sensitivity</h3>
-    <p class="sub">If tracking misses the ball or picks up noise, adjust and re-run.</p>
-    <div class="sens-row">
-      <span class="sub">Less</span>
-      <input type="range" id="sens-slider" min="50" max="150" value="100">
-      <span class="sub">More</span>
-      <span class="val" id="sens-val">1.00</span>
-    </div>
-    <button class="btn sm" onclick="retrack()">Re-track</button>
-  </div>
-</div>
-
-<!-- ===== RESULTS ===== -->
-<div class="screen" id="s-results">
-  <h2>Results</h2>
-
-  <div class="card">
-    <h3 style="margin-top:0">Velocity Profile</h3>
-    <p class="sub">Ball position and velocity vs time. The flat region is the terminal velocity.</p>
-    <canvas id="vel-chart" width="600" height="360"></canvas>
-  </div>
-
-  <div class="card" id="terminal-card">
-    <h3 style="margin-top:0">Terminal Velocity</h3>
-    <div class="result-grid">
-      <div class="result-box">
-        <p class="result-label">V<sub>t</sub></p>
-        <p class="result-val" id="r-vt">--</p>
-        <p class="result-label">cm/s</p>
-      </div>
-      <div class="result-box">
-        <p class="result-label">Re</p>
-        <p class="result-val" id="r-re">--</p>
-      </div>
-      <div class="result-box">
-        <p class="result-label">C<sub>D</sub> meas.</p>
-        <p class="result-val" id="r-cd">--</p>
-      </div>
-    </div>
-    <div class="kv"><span class="k">C<sub>D</sub> from correlation</span><span class="v" id="r-cd-calc">--</span></div>
-    <div class="kv"><span class="k">% difference</span><span class="v pct-diff" id="r-pct">--</span></div>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-top:0">C<sub>D</sub> vs Re</h3>
-    <p class="sub">Your measurement (dot) on the standard drag curve.</p>
-    <canvas id="cd-chart" width="600" height="400"></canvas>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-top:0">Tracked Playback</h3>
-    <div class="canvas-wrap">
-      <canvas id="playback-canvas"></canvas>
-    </div>
-    <input type="range" id="playback-scrub" min="0" max="100" value="0" style="width:100%;accent-color:var(--accent);margin-top:6px;">
-    <label class="overlay-toggle"><input type="checkbox" id="show-trail" checked> Show trail</label>
-  </div>
-
-  <button class="btn ghost" onclick="show('s-track');document.getElementById('sens-card').style.display='block';">&larr; Adjust &amp; Re-track</button>
-  <button class="btn ghost" onclick="show('s-video')">&larr; Try Different Video</button>
-</div>
+  <button class="btn" id="res-again">다른 영상으로 다시 하기</button>
+  <button class="btn ghost" data-go="s-home">처음으로</button>
+</section>
 </main>
 
+<video id="vid" playsinline muted preload="auto"></video>
+
 <script>
-const G=9.81;
-let setup={}, vidEl=null, probe=null;
-let calibY1=null, calibY2=null, markerDistCm=31.6;
-let W=480, H=0, fps=24;
-let track=[], trackRaw=[];
-let sensitivity=1.0;
+const G = 9.81;
+const SLOW_IPHONE = 3.91;
+const FLUIDS = {
+  gly: { name:'글리세린', label:'GLY 1.257', rho:1254.7, mu:0.834, vRef:4.6 },
+  mix: { name:'글리세린+물', label:'GLY AND WATER 1.1306', rho:1128.6, mu:0.0063, vRef:26 }
+};
+const DEMOS = {
+  gly: { src:'demo/gly_slomo.mp4', fluid:'gly', yTop:586, yBot:765, xc:317, t0:62 },
+  mix: { src:'demo/mix_slomo.mp4', fluid:'mix', yTop:582.5, yBot:760, xc:388, t0:14.5 }
+};
+const S = { fluid:'gly', mode:'slomo', demo:null, vw:0, vh:0, dur:0,
+            yTop:null, yBot:null, xc:null, pick:null, pend:null, frame:null, path:null,
+            p:{ rhoF:0, mu:0, dMm:6.35, rhoS:2700, gapCm:31.6, slow:SLOW_IPHONE } };
+const $ = id => document.getElementById(id);
+const vid = $('vid');
+const qs = new URLSearchParams(location.search);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
 function show(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
-  window.scrollTo(0,0);
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  window.scrollTo(0, 0);
 }
-
-function fillFluid(){
-  const v=document.getElementById('fluid-sel').value;
-  if(v==='gly'){document.getElementById('f-rho').value=1235;document.getElementById('f-mu').value=1.261;}
-  if(v==='mix'){document.getElementById('f-rho').value=1192;document.getElementById('f-mu').value=0.0055;}
-}
-function fillSphere(){
-  const v=document.getElementById('sphere-sel').value;
-  if(v==='steel'){document.getElementById('s-rho').value=7820;document.getElementById('s-d').value=3.94;}
-  if(v==='light'){document.getElementById('s-rho').value=2830;document.getElementById('s-d').value=3.94;}
-  if(v==='alum'){document.getElementById('s-rho').value=2700;document.getElementById('s-d').value=6.35;}
-}
-function saveSetup(){
-  setup={
-    rhoF:+document.getElementById('f-rho').value,
-    muF:+document.getElementById('f-mu').value,
-    rhoS:+document.getElementById('s-rho').value,
-    dMm:+document.getElementById('s-d').value,
-    slowF:+document.getElementById('slowf').value||4
-  };
-  setup.dM=setup.dMm/1000;
-}
-
-/* ---- VIDEO ---- */
-function onVid(inp){
-  if(!inp.files||!inp.files[0])return;
-  const url=URL.createObjectURL(inp.files[0]);
-  const prev=document.getElementById('preview-player');
-  prev.src=url;
-  prev.onloadedmetadata=function(){
-    document.getElementById('vid-info').textContent=
-      Math.round(prev.videoWidth)+'×'+Math.round(prev.videoHeight)+', '+prev.duration.toFixed(1)+'s';
-    document.getElementById('vid-preview').style.display='block';
-    vidEl=prev;
-  };
-}
-
-/* ---- CALIBRATE ---- */
-function startCalibrate(){
-  calibY1=null; calibY2=null;
-  document.getElementById('line1').style.display='none';
-  document.getElementById('line2').style.display='none';
-  document.getElementById('calib-dist-card').style.display='none';
-  document.getElementById('calib-instruction').innerHTML='Tap the <strong>upper marker line</strong> on the tube.';
-  show('s-calib');
-
-  if(!probe){
-    probe=document.createElement('video');
-    probe.playsInline=true; probe.muted=true; probe.preload='auto';
-    probe.style.cssText='position:fixed;opacity:0.01;pointer-events:none;width:1px;height:1px;';
-    document.body.appendChild(probe);
-  }
-  probe.src=vidEl.src;
-  probe.onloadedmetadata=function(){
-    fps=30;
-    const ratio=probe.videoHeight/probe.videoWidth;
-    H=Math.round(W*ratio);
-    const c=document.getElementById('calib-canvas');
-    c.width=W; c.height=H;
-    seekAndDraw(probe,0.5,c);
-  };
-}
-
-function seekAndDraw(v,t,c){
-  return new Promise(function(res){
-    v.currentTime=Math.min(t,v.duration-0.01);
-    v.onseeked=function(){
-      const ctx=c.getContext('2d');
-      ctx.drawImage(v,0,0,c.width,c.height);
-      res();
-    };
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+$('go-demo').onclick = () => show('s-demo');
+$('go-own').onclick = () => show('s-own');
+document.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => startDemo(b.dataset.demo));
+function bindOpts(boxId, key){
+  document.querySelectorAll('#'+boxId+' .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#'+boxId+' .opt').forEach(o => o.classList.toggle('on', o === b));
+    S[key] = b.dataset.v;
   });
 }
+bindOpts('opt-fluid', 'fluid');
+bindOpts('opt-mode', 'mode');
 
-document.getElementById('calib-canvas').addEventListener('click',function(e){
-  const rect=this.getBoundingClientRect();
-  const scaleY=H/rect.height;
-  const y=Math.round((e.clientY-rect.top)*scaleY);
-  const pct=((e.clientY-rect.top)/rect.height*100).toFixed(1)+'%';
-
-  if(calibY1===null){
-    calibY1=y;
-    const l1=document.getElementById('line1');
-    l1.style.display='block'; l1.style.top=pct;
-    document.getElementById('calib-instruction').innerHTML='Now tap the <strong>lower marker line</strong>.';
-  } else if(calibY2===null){
-    calibY2=y;
-    if(calibY2<calibY1){const tmp=calibY1;calibY1=calibY2;calibY2=tmp;}
-    const l2=document.getElementById('line2');
-    l2.style.display='block'; l2.style.top=pct;
-    document.getElementById('calib-instruction').innerHTML='Both lines set. Enter the real distance and continue.';
-    document.getElementById('calib-dist-card').style.display='block';
-  }
-});
-
-/* ---- TRACKING ---- */
-function startTracking(){
-  markerDistCm=+document.getElementById('marker-dist').value||31.6;
-  show('s-track');
-  document.getElementById('sens-card').style.display='none';
-  runTracking();
+function once(el, ev, ms){
+  return new Promise((res, rej) => {
+    const t = ms ? setTimeout(() => { el.removeEventListener(ev, f); rej(new Error('timeout ' + ev)); }, ms) : 0;
+    function f(){ clearTimeout(t); el.removeEventListener(ev, f); res(); }
+    el.addEventListener(ev, f);
+  });
 }
-function retrack(){
-  sensitivity=document.getElementById('sens-slider').value/100;
-  document.getElementById('sens-val').textContent=sensitivity.toFixed(2);
-  runTracking();
+async function loadVideo(src){
+  vid.src = src;
+  vid.load();
+  await once(vid, 'loadeddata', 30000);
+  S.vw = vid.videoWidth; S.vh = vid.videoHeight; S.dur = vid.duration;
+}
+async function seek(t){
+  const p = once(vid, 'seeked', 8000);
+  vid.currentTime = Math.max(0, Math.min(t, S.dur - 0.02));
+  await p;
+}
+function setParams(fluidKey, slow){
+  const f = FLUIDS[fluidKey];
+  Object.assign(S.p, { rhoF:f.rho, mu:f.mu, dMm:6.35, rhoS:2700, gapCm:31.6, slow });
 }
 
-document.getElementById('sens-slider').addEventListener('input',function(){
-  document.getElementById('sens-val').textContent=(this.value/100).toFixed(2);
+/* ---------- 데모 / 내 영상 시작 ---------- */
+async function startDemo(key){
+  const d = DEMOS[key];
+  S.demo = key; S.fluid = d.fluid; S.mode = 'slomo';
+  setParams(d.fluid, SLOW_IPHONE);
+  await openLines(d.src, d.t0, d);
+}
+$('file-pick').onchange = async e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  S.demo = null;
+  setParams(S.fluid, S.mode === 'slomo' ? SLOW_IPHONE : 1);
+  await openLines(URL.createObjectURL(f), null, null);
+  e.target.value = '';
+};
+
+/* ---------- 선 표시 ---------- */
+async function openLines(src, t0, preset){
+  show('s-lines');
+  $('ln-msg').textContent = '영상을 불러오는 중…';
+  $('ln-zoom-box').hidden = true; $('ln-done').hidden = true;
+  try { await loadVideo(src); }
+  catch(err){ $('ln-msg').innerHTML = '<span class="err">영상을 열지 못했어요. 다른 영상으로 해 보세요.</span>'; return; }
+  await seek(t0 != null ? t0 : S.dur * 0.15);
+  const fc = document.createElement('canvas'); fc.width = S.vw; fc.height = S.vh;
+  fc.getContext('2d').drawImage(vid, 0, 0, S.vw, S.vh);
+  S.frame = fc;
+  const m = $('ln-main');
+  const sc = Math.min(1, 720 / S.vw);
+  m.width = Math.round(S.vw * sc); m.height = Math.round(S.vh * sc);
+  if (preset){
+    S.yTop = preset.yTop; S.yBot = preset.yBot; S.xc = preset.xc; S.pick = null;
+    finishLines(true);
+  } else {
+    S.yTop = S.yBot = S.xc = null;
+    beginPick('top');
+  }
+  if (qs.get('auto') === '1' && preset) runTrack();
+}
+function beginPick(which){
+  S.pick = which; S.pend = null;
+  $('ln-done').hidden = true; $('ln-zoom-box').hidden = true;
+  $('ln-msg').innerHTML = which === 'top'
+    ? '① 관 위의 <b>초록 선(위쪽)</b>을 눌러 주세요. 공을 떨어뜨린 관 위를 누르면 돼요.'
+    : '② 같은 관 위의 <b>빨간 선(아래쪽)</b>을 눌러 주세요.';
+  drawMain();
+}
+function finishLines(isDemo){
+  if (S.yBot < S.yTop){ const t = S.yTop; S.yTop = S.yBot; S.yBot = t; }
+  S.pick = null; S.pend = null;
+  $('ln-zoom-box').hidden = true; $('ln-done').hidden = false;
+  $('ln-msg').innerHTML = isDemo
+    ? '데모 영상은 두 선의 위치를 미리 맞춰 두었어요. 초록 선과 빨간 선 위에 표시가 있는지 확인하고 시작하세요.'
+    : '두 선이 모두 표시됐어요. 위치가 맞으면 시작하세요.';
+  drawMain();
+}
+function drawMain(){
+  const m = $('ln-main'), x = m.getContext('2d'), k = m.width / S.vw;
+  x.drawImage(S.frame, 0, 0, m.width, m.height);
+  const half = S.yTop != null && S.yBot != null ? 0.14 * Math.abs(S.yBot - S.yTop) : 0.025 * S.vw;
+  const mark = (y, col, dash) => {
+    if (y == null) return;
+    x.save(); x.strokeStyle = col; x.lineWidth = 3; if (dash) x.setLineDash([8, 6]);
+    x.beginPath(); x.moveTo((S.xc - half * 1.6) * k, y * k); x.lineTo((S.xc + half * 1.6) * k, y * k); x.stroke(); x.restore();
+  };
+  mark(S.yTop, css('--top'));
+  mark(S.yBot, css('--bot'));
+  if (S.pend) mark(S.pend.y, css('--accent'), true);
+}
+$('ln-main').addEventListener('click', e => {
+  if (!S.pick) return;
+  const r = e.target.getBoundingClientRect();
+  const vx = (e.clientX - r.left) / r.width * S.vw, vy = (e.clientY - r.top) / r.height * S.vh;
+  if (S.pick === 'top' || S.xc == null) S.xc = vx;
+  S.pend = { y: vy };
+  $('ln-zoom-title').textContent = S.pick === 'top' ? '초록 선(위쪽) 확대' : '빨간 선(아래쪽) 확대';
+  $('ln-zoom-box').hidden = false;
+  drawZoom(); drawMain();
+  $('ln-zoom-box').scrollIntoView({ behavior:'smooth', block:'center' });
 });
+function zoomRect(){
+  const w = 0.2 * S.vw, h = w * 0.5;
+  return { x: S.xc - w / 2, y: S.pend.y - h / 2, w, h };
+}
+function drawZoom(){
+  const z = $('ln-zoom'), x = z.getContext('2d'), R = zoomRect();
+  z.width = 600; z.height = 300;
+  x.fillStyle = '#000'; x.fillRect(0, 0, 600, 300);
+  x.drawImage(S.frame, R.x, R.y, R.w, R.h, 0, 0, 600, 300);
+  x.save(); x.strokeStyle = css('--accent'); x.lineWidth = 2; x.setLineDash([10, 7]);
+  x.beginPath(); x.moveTo(0, 150); x.lineTo(600, 150); x.stroke(); x.restore();
+}
+$('ln-zoom').addEventListener('click', e => {
+  const r = e.target.getBoundingClientRect(), R = zoomRect();
+  S.pend.y = R.y + (e.clientY - r.top) / r.height * R.h;
+  drawZoom(); drawMain();
+});
+const nudge = d => { S.pend.y += d * Math.max(1, S.vw / 720); drawZoom(); drawMain(); };
+$('ln-up').onclick = () => nudge(-1);
+$('ln-down').onclick = () => nudge(1);
+$('ln-ok').onclick = () => {
+  if (S.pick === 'top'){ S.yTop = S.pend.y; beginPick('bot'); }
+  else { S.yBot = S.pend.y; finishLines(false); }
+};
+$('ln-redo').onclick = () => { S.yTop = S.yBot = null; beginPick('top'); };
+$('ln-back').onclick = () => show(S.demo ? 's-demo' : 's-own');
+$('go-track').onclick = () => runTrack();
+$('res-again').onclick = () => show(S.demo ? 's-demo' : 's-own');
 
-async function runTracking(){
-  const bar=document.getElementById('track-bar');
-  const status=document.getElementById('track-status');
-  const c=document.getElementById('track-canvas');
-  c.width=W; c.height=H;
-  const ctx=c.getContext('2d');
-
-  const dur=probe.duration;
-  const sampleFps=12;
-  const dt=1/sampleFps;
-  const totalFrames=Math.floor(dur/dt);
-  trackRaw=[];
-
-  const bgCanvas=document.createElement('canvas');
-  bgCanvas.width=W; bgCanvas.height=H;
-  const bgCtx=bgCanvas.getContext('2d');
-
-  status.textContent='Building background model...';
-  bar.style.width='0%';
-
-  const bgSamples=Math.min(20,totalFrames);
-  const bgAccum=new Float32Array(W*H);
-  let bgCount=0;
-  for(let i=0;i<bgSamples;i++){
-    const t=(i/bgSamples)*dur;
-    await seekAndDraw(probe,t,bgCanvas);
-    const d=bgCtx.getImageData(0,0,W,H).data;
-    for(let p=0;p<W*H;p++){
-      bgAccum[p]+=(d[p*4]*0.299+d[p*4+1]*0.587+d[p*4+2]*0.114);
+/* ---------- 공 찾기 (영상 처리) ----------
+   공은 화면에서 지름 3 px 정도의 밝은 점이다. 밝은 작은 점만 남기는 white top-hat 으로 후보를 찾고,
+   영상 내내 같은 자리에 있는 반짝임(관 테두리 반사 등)은 여러 장면의 중앙값을 빼서 지운다. */
+function makeDetector(){
+  const gap = S.yBot - S.yTop, sc = gap / 179;
+  const half = Math.round(0.31 * gap), mg = Math.round(0.15 * gap);
+  const x0 = Math.max(0, Math.round(S.xc - half)), x1 = Math.min(S.vw, Math.round(S.xc + half));
+  const y0 = Math.max(0, Math.round(S.yTop - mg)), y1 = Math.min(S.vh, Math.round(S.yBot + mg));
+  const W = x1 - x0, H = y1 - y0, N = W * H;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const cx = c.getContext('2d', { willReadFrequently:true });
+  const k = Math.max(5, Math.round(9 * sc) | 1), rk = (k - 1) >> 1;
+  const nb = Math.max(2, Math.round(3 * sc));
+  const g = new Float32Array(N), b = new Float32Array(N), t1 = new Float32Array(N), t2 = new Float32Array(N);
+  function minmax(src, dst, horiz, isMin){
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++){
+      let v = isMin ? 1e9 : -1e9;
+      for (let d = -rk; d <= rk; d++){
+        const xx = horiz ? x + d : x, yy = horiz ? y : y + d;
+        if (xx < 0 || xx >= W || yy < 0 || yy >= H) continue;
+        const s = src[yy * W + xx];
+        if (isMin ? s < v : s > v) v = s;
+      }
+      dst[y * W + x] = v;
     }
-    bgCount++;
   }
-  const bgGray=new Uint8Array(W*H);
-  for(let p=0;p<W*H;p++) bgGray[p]=Math.round(bgAccum[p]/bgCount);
-
-  const roiTop=Math.max(0,calibY1-20);
-  const roiBot=Math.min(H,calibY2+20);
-
-  status.textContent='Tracking ball...';
-
-  for(let fi=0;fi<totalFrames;fi++){
-    const t=fi*dt;
-    await seekAndDraw(probe,t,c);
-    const frame=ctx.getImageData(0,0,W,H);
-    const d=frame.data;
-
-    let bestX=-1, bestY=-1, bestScore=-1;
-    const thresh=30*sensitivity;
-
-    const blobs=[];
-    const visited=new Uint8Array(W*H);
-
-    for(let py=roiTop;py<roiBot;py++){
-      for(let px=0;px<W;px++){
-        const idx=py*W+px;
-        if(visited[idx])continue;
-        const gray=d[idx*4]*0.299+d[idx*4+1]*0.587+d[idx*4+2]*0.114;
-        const diff=gray-bgGray[idx];
-        if(diff>thresh){
-          const blob=floodFill(d,visited,px,py,W,H,bgGray,thresh,roiTop,roiBot);
-          if(blob.area>=2 && blob.area<=200){
-            blobs.push(blob);
-          }
-        }
+  function topHat(){
+    cx.drawImage(vid, x0, y0, W, H, 0, 0, W, H);
+    const d = cx.getImageData(0, 0, W, H).data;
+    for (let i = 0; i < N; i++) g[i] = 0.299 * d[i*4] + 0.587 * d[i*4+1] + 0.114 * d[i*4+2];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++){
+      let s = 0, n = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++){
+        const xx = x + dx, yy = y + dy;
+        if (xx >= 0 && xx < W && yy >= 0 && yy < H){ s += g[yy * W + xx]; n++; }
       }
+      b[y * W + x] = s / n;
     }
-
-    if(blobs.length>0){
-      blobs.sort(function(a,b){return b.brightness-a.brightness;});
-      let chosen=blobs[0];
-      if(trackRaw.length>0){
-        const last=trackRaw[trackRaw.length-1];
-        const predY=last.y+(trackRaw.length>1?last.y-trackRaw[trackRaw.length-2].y:2);
-        let bestDist=Infinity;
-        for(let bi=0;bi<Math.min(blobs.length,5);bi++){
-          const dist=Math.abs(blobs[bi].cy-predY)+Math.abs(blobs[bi].cx-last.x)*0.5;
-          if(dist<bestDist){bestDist=dist;chosen=blobs[bi];}
-        }
-        if(bestDist>H*0.15) chosen=null;
+    minmax(b, t1, true, true); minmax(t1, t2, false, true);
+    minmax(t2, t1, true, false); minmax(t1, t2, false, false);
+    const th = new Float32Array(N);
+    for (let i = 0; i < N; i++) th[i] = Math.max(0, b[i] - t2[i]);
+    return th;
+  }
+  function candidates(th, bg, RMIN){
+    const out = [];
+    for (let y = nb; y < H - nb; y++) for (let x = nb; x < W - nb; x++){
+      const v = th[y * W + x] - bg[y * W + x];
+      if (v < RMIN) continue;
+      let peak = true;
+      for (let dy = -nb; dy <= nb && peak; dy++) for (let dx = -nb; dx <= nb; dx++){
+        const j = (y + dy) * W + x + dx;
+        if (th[j] - bg[j] > v){ peak = false; break; }
       }
-      if(chosen){
-        trackRaw.push({t:t, x:chosen.cx, y:chosen.cy, frame:fi});
-      }
+      if (peak) out.push({ x: x + x0, y: y + y0, r: v });
     }
+    out.sort((a, b) => b.r - a.r);
+    return out.slice(0, 6);
+  }
+  return { topHat, candidates, box:{ x0, y0, W, H }, sc, N };
+}
 
-    if(fi%3===0){
-      ctx.drawImage(probe,0,0,W,H);
-      if(trackRaw.length>0){
-        ctx.fillStyle='#ff4444';
-        const last=trackRaw[trackRaw.length-1];
-        ctx.beginPath();ctx.arc(last.x,last.y,5,0,Math.PI*2);ctx.fill();
-        if(trackRaw.length>1){
-          ctx.strokeStyle='rgba(255,68,68,0.5)';ctx.lineWidth=2;ctx.beginPath();
-          ctx.moveTo(trackRaw[0].x,trackRaw[0].y);
-          for(let ti=1;ti<trackRaw.length;ti++) ctx.lineTo(trackRaw[ti].x,trackRaw[ti].y);
-          ctx.stroke();
-        }
-      }
-      bar.style.width=((fi/totalFrames)*100).toFixed(0)+'%';
-    }
+function drawRunView(cands, box){
+  const v = $('run-view'), x = v.getContext('2d');
+  const sc = Math.min(1, 480 / S.vw);
+  if (v.width !== Math.round(S.vw * sc)){ v.width = Math.round(S.vw * sc); v.height = Math.round(S.vh * sc); }
+  x.drawImage(vid, 0, 0, v.width, v.height);
+  x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 1;
+  x.strokeRect(box.x0 * sc, box.y0 * sc, box.W * sc, box.H * sc);
+  [[S.yTop, css('--top')], [S.yBot, css('--bot')]].forEach(([y, col]) => {
+    x.strokeStyle = col; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(box.x0 * sc, y * sc); x.lineTo((box.x0 + box.W) * sc, y * sc); x.stroke();
+  });
+  x.strokeStyle = css('--ball'); x.lineWidth = 2;
+  cands.slice(0, 3).forEach(c => { x.beginPath(); x.arc(c.x * sc, c.y * sc, 7, 0, 7); x.stroke(); });
+}
 
-    await new Promise(function(r){requestAnimationFrame(r);});
+async function runTrack(){
+  show('s-run');
+  const bar = $('run-bar'), msg = $('run-msg');
+  bar.style.width = '0%';
+  const D = makeDetector();
+
+  // 1단계: 영상을 빠르게 한 번 재생하면서 장면마다 '밝은 작은 점' 지도를 모아 둔다
+  msg.textContent = '1/2 · 영상을 훑어보는 중…';
+  const frames = [];
+  const grab = t => {
+    const th = D.topHat(), u = new Uint8Array(D.N);
+    for (let i = 0; i < D.N; i++) u[i] = th[i] > 255 ? 255 : th[i];
+    frames.push({ t, u });
+    if (frames.length % 3 === 1) drawRunView([], D.box);
+    bar.style.width = (80 * t / S.dur).toFixed(0) + '%';
+  };
+  if ('requestVideoFrameCallback' in HTMLVideoElement.prototype){
+    await seek(0);
+    vid.playbackRate = Math.max(1, Math.min(6, S.dur / 20));
+    await new Promise(res => {
+      let done = false;
+      const fin = () => { if (!done){ done = true; vid.pause(); res(); } };
+      const cb = (now, meta) => { if (done) return; grab(meta.mediaTime); if (!vid.ended) vid.requestVideoFrameCallback(cb); };
+      vid.requestVideoFrameCallback(cb);
+      vid.onended = fin;
+      vid.play().catch(fin);
+    });
+    vid.playbackRate = 1;
+  } else {
+    for (let t = 0; t < S.dur; t += 1 / 8){ await seek(t); grab(t); }
   }
 
-  bar.style.width='100%';
-  status.textContent='Found '+trackRaw.length+' positions in '+totalFrames+' frames.';
-  document.getElementById('sens-card').style.display='block';
+  // 2단계: 배경 = 25장면의 중앙값 + 2.5 × MAD. 관 벽처럼 늘 깜빡이는 자리는 문턱이 저절로 높아진다.
+  msg.textContent = '2/2 · 공을 찾는 중…';
+  await new Promise(r => setTimeout(r, 30));
+  const NB = Math.min(25, frames.length), tmp = new Float32Array(NB), bg = new Float32Array(D.N);
+  const pick = Array.from({ length:NB }, (_, i) => frames[Math.floor((i + 0.5) / NB * frames.length)].u);
+  for (let p = 0; p < D.N; p++){
+    for (let i = 0; i < NB; i++) tmp[i] = pick[i][p];
+    tmp.sort(); const med = tmp[NB >> 1];
+    for (let i = 0; i < NB; i++) tmp[i] = Math.abs(pick[i][p] - med);
+    tmp.sort(); bg[p] = med + 2.5 * tmp[NB >> 1];
+  }
+  const C = [], f32 = new Float32Array(D.N);
+  frames.forEach(fr => {
+    for (let i = 0; i < D.N; i++) f32[i] = fr.u[i];
+    D.candidates(f32, bg, 10).forEach(c => C.push({ t:fr.t, x:c.x, y:c.y, r:c.r }));
+  });
+  const nFrames = frames.length;
+  bar.style.width = '100%';
+  analyse(C, D.sc, nFrames);
+}
 
-  if(trackRaw.length<5){
-    status.textContent='Not enough detections ('+trackRaw.length+'). Try adjusting sensitivity.';
+/* ---------- 후보 잇기: 아래로만 움직이는 가장 밝은 한 줄기 ----------
+   한 장면에서 다음 장면으로 갈 때 공은 아래로만 가고(dy ≥ 0), 옆으로는 거의 안 움직인다.
+   이 조건을 만족하는 후보들을 이어서 밝기 합이 가장 큰 줄기를 공의 경로로 고른다. */
+function link(C, sc, vmax, yA, yB){
+  const n = C.length, score = new Float64Array(n), back = new Int32Array(n).fill(-1), start = new Float64Array(n);
+  const GAP = 3;
+  let j0 = 0;
+  for (let i = 0; i < n; i++){
+    const c = C[i];
+    score[i] = c.r; start[i] = c.y;
+    while (C[j0].t < c.t - GAP) j0++;
+    let best = 0, bk = -1;
+    for (let j = j0; j < i; j++){
+      const p = C[j], dt = c.t - p.t;
+      if (dt <= 0) continue;
+      const dy = c.y - p.y;
+      if (dy < -sc || dy > vmax * dt + 2 * sc || Math.abs(c.x - p.x) > 5 * sc) continue;
+      const v = score[j] - 12 * Math.max(0, dt - 1 / 24);
+      if (v > best){ best = v; bk = j; }
+    }
+    if (bk >= 0){ score[i] = c.r + best; back[i] = bk; start[i] = start[bk]; }
+  }
+  // 공은 위 선 위에서 출발해 아래 선 밑까지 가는 유일한 줄기다. 그런 줄기 중 가장 점수가 큰 것을 고른다.
+  let i = -1;
+  for (let k = 0; k < n; k++) if (C[k].y >= yB && start[k] < yA && (i < 0 || score[k] > score[i])) i = k;
+  if (i < 0){ i = 0; for (let k = 1; k < n; k++) if (score[k] > score[i]) i = k; }
+  const path = [];
+  while (i >= 0){ path.push(C[i]); i = back[i]; }
+  return path.reverse();
+}
+function crossTime(P, yl){
+  for (let k = 1; k < P.length; k++)
+    if (P[k-1].y < yl && P[k].y >= yl) return P[k-1].t + (yl - P[k-1].y) / (P[k].y - P[k-1].y) * (P[k].t - P[k-1].t);
+  return null;
+}
+
+function analyse(C, sc, nFrames){
+  show('s-res');
+  const err = $('res-err');
+  err.hidden = true; $('res-body').hidden = false;
+  const pxPerCm = (S.yBot - S.yTop) / S.p.gapCm;
+  const vExpPx = FLUIDS[S.fluid].vRef * pxPerCm / S.p.slow;
+  const P = C.length ? link(C, sc, Math.max(20 * sc, 5 * vExpPx), S.yTop, S.yBot) : [];
+  const tTop = crossTime(P, S.yTop), tBot = crossTime(P, S.yBot);
+  S.path = P;
+  if (tTop == null || tBot == null){
+    err.hidden = false; $('res-body').hidden = true;
+    err.innerHTML = '<h3 class="err">공을 두 선 사이에서 끝까지 따라가지 못했어요</h3>'
+      + '<p class="sub">찾은 공 위치 ' + P.length + '개 (장면 ' + nFrames + '개 중). 이런 경우가 많아요:</p>'
+      + '<ul class="tips"><li>두 선을 공이 지나간 관이 아닌 다른 관 위에 표시했어요.</li>'
+      + '<li>공이 두 선 사이를 다 지나기 전에 녹화를 멈췄어요.</li>'
+      + '<li>폰이 흔들렸거나, 손·그림자가 관을 가렸어요.</li></ul>';
+    document.body.dataset.result = JSON.stringify({ ok:false, n:P.length, frames:nFrames, nc:C.length,
+      path:P.filter((q, i) => i % Math.ceil(P.length / 25 || 1) === 0).map(q => [+q.t.toFixed(2), Math.round(q.x), Math.round(q.y), Math.round(q.r)]) });
     return;
   }
-
-  computeResults();
-}
-
-function floodFill(data,visited,sx,sy,w,h,bg,thresh,roiTop,roiBot){
-  const queue=[[sx,sy]];
-  visited[sy*w+sx]=1;
-  let sumX=0,sumY=0,area=0,sumBri=0;
-  while(queue.length>0){
-    const[cx,cy]=queue.pop();
-    const idx=cy*w+cx;
-    const gray=data[idx*4]*0.299+data[idx*4+1]*0.587+data[idx*4+2]*0.114;
-    sumX+=cx; sumY+=cy; area++; sumBri+=gray;
-    const neighbors=[[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]];
-    for(const[nx,ny] of neighbors){
-      if(nx<0||nx>=w||ny<roiTop||ny>=roiBot)continue;
-      const ni=ny*w+nx;
-      if(visited[ni])continue;
-      visited[ni]=1;
-      const ng=data[ni*4]*0.299+data[ni*4+1]*0.587+data[ni*4+2]*0.114;
-      if(ng-bg[ni]>thresh) queue.push([nx,ny]);
-    }
-    if(area>200)break;
-  }
-  return {cx:sumX/area, cy:sumY/area, area:area, brightness:sumBri/area};
-}
-
-/* ---- RESULTS ---- */
-function computeResults(){
-  const pxPerCm=(calibY2-calibY1)/markerDistCm;
-  const slowF=setup.slowF;
-
-  track=trackRaw.map(function(p){
-    const realT=p.t/slowF;
-    const realY=(p.y-calibY1)/pxPerCm;
-    return {t:realT, y_cm:realY, x:p.x, y_px:p.y, frame:p.frame, t_vid:p.t};
-  });
-
-  const vel=[];
-  for(let i=1;i<track.length;i++){
-    const dt_s=track[i].t-track[i-1].t;
-    if(dt_s<=0)continue;
-    const dy_cm=track[i].y_cm-track[i-1].y_cm;
-    const v=dy_cm/dt_s;
-    vel.push({t:0.5*(track[i].t+track[i-1].t), v:v, y_cm:0.5*(track[i].y_cm+track[i-1].y_cm)});
-  }
-
-  const smoothVel=[];
-  const win=3;
-  for(let i=win;i<vel.length-win;i++){
-    let sv=0;
-    for(let j=-win;j<=win;j++) sv+=vel[i+j].v;
-    smoothVel.push({t:vel[i].t, v:sv/(2*win+1), y_cm:vel[i].y_cm});
-  }
-
-  const inRegion=smoothVel.filter(function(p){return p.y_cm>=0 && p.y_cm<=markerDistCm;});
-  let vtCmS=0;
-  if(inRegion.length>=3){
-    const mid=inRegion.slice(Math.floor(inRegion.length*0.3),Math.floor(inRegion.length*0.9));
-    if(mid.length>0){
-      const sorted=mid.map(function(p){return p.v;}).sort(function(a,b){return a-b;});
-      vtCmS=sorted[Math.floor(sorted.length/2)];
-    }
-  }
-  if(vtCmS<=0 && smoothVel.length>0){
-    const sorted=smoothVel.map(function(p){return p.v;}).sort(function(a,b){return a-b;});
-    vtCmS=sorted[Math.floor(sorted.length/2)];
-  }
-
-  const vtMs=vtCmS/100;
-  const d=setup.dM;
-  const Re=setup.rhoF*vtMs*d/setup.muF;
-  const vol=(Math.PI/6)*d*d*d;
-  const area=(Math.PI/4)*d*d;
-  const wSub=(setup.rhoS-setup.rhoF)*vol*G;
-  const cdMeas=wSub/(0.5*setup.rhoF*vtMs*vtMs*area);
-  const cdCalc=24/Re+3/Math.sqrt(Re)+0.34;
-  const pctDiff=Math.abs((cdMeas-cdCalc)/cdCalc)*100;
-
-  document.getElementById('r-vt').textContent=vtCmS.toFixed(2);
-  document.getElementById('r-re').textContent=Re.toFixed(2);
-  document.getElementById('r-cd').textContent=cdMeas.toFixed(2);
-  document.getElementById('r-cd-calc').textContent=cdCalc.toFixed(3);
-  const pc=document.getElementById('r-pct');
-  pc.textContent=pctDiff.toFixed(1)+'%';
-  pc.className='v pct-diff '+(pctDiff<15?'ok':pctDiff<40?'warn':'bad');
-
-  show('s-results');
-  drawVelChart(smoothVel, vtCmS);
-  drawCdChart(Re, cdMeas);
+  S.cross = { tTop, tBot };
+  recompute();
   setupPlayback();
 }
 
-function drawVelChart(vel, vt){
-  const c=document.getElementById('vel-chart');
-  const dpr=window.devicePixelRatio||1;
-  const cw=600, ch=360;
-  c.width=cw*dpr; c.height=ch*dpr;
-  c.style.width=cw+'px'; c.style.height=ch+'px';
-  const ctx=c.getContext('2d');
-  ctx.scale(dpr,dpr);
+function recompute(){
+  const p = S.p, P = S.path, f = FLUIDS[S.fluid];
+  const pxPerCm = (S.yBot - S.yTop) / p.gapCm;
+  const dtReal = (S.cross.tBot - S.cross.tTop) / p.slow;
+  const vCm = p.gapCm / dtReal, V = vCm / 100, d = p.dMm / 1000;
+  const Re = p.rhoF * V * d / p.mu;
+  const cdM = 4 * (p.rhoS - p.rhoF) * G * d / (3 * p.rhoF * V * V);
+  const cdC = 24 / Re + 3 / Math.sqrt(Re) + 0.34;
+  const diff = (cdM - cdC) / cdC * 100;
+  const f2 = (x, n) => Number(x).toFixed(n);
 
-  const dk=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  const bg=dk?'#1b1f26':'#fff';
-  const grid=dk?'#2c323b':'#e5e7eb';
-  const txt=dk?'#9aa4b2':'#5b6472';
-  const accentC=dk?'#4d8dff':'#1857c4';
-  const vtColor=dk?'#4fd08a':'#0f7a4a';
+  $('r-v').textContent = vCm >= 10 ? f2(vCm, 1) : f2(vCm, 2);
+  $('r-sent').innerHTML = '공이 두 선 사이 <b>' + f2(p.gapCm, 1) + ' cm</b>를 <b>' + f2(dtReal, 2) + '초</b> 동안 지나갔어요.'
+    + (p.slow !== 1 ? '<br><span class="sub">슬로모 영상에서는 ' + f2(S.cross.tBot - S.cross.tTop, 1) + '초였고, 슬로모 배율 ' + f2(p.slow, 2) + '로 나눈 값이에요.</span>' : '');
+  const ratio = vCm / f.vRef, chk = $('r-check');
+  if (ratio > 0.5 && ratio < 2){ chk.className = 'pill ok'; chk.textContent = f.name + ' 관에서 예상되는 범위예요'; }
+  else if (ratio >= 2){ chk.className = 'pill warn'; chk.textContent = '예상보다 ' + f2(ratio, 1) + '배 빨라요. 보통 속도 영상인데 슬로모를 고르지 않았나요?'; }
+  else { chk.className = 'pill warn'; chk.textContent = '예상보다 ' + f2(1 / ratio, 1) + '배 느려요. 슬로모 영상인데 보통 속도를 고르지 않았나요?'; }
 
-  ctx.fillStyle=bg; ctx.fillRect(0,0,cw,ch);
-  const pad={t:30,r:30,b:50,l:60};
-  const pw=cw-pad.l-pad.r, ph=ch-pad.t-pad.b;
+  $('c-re').innerHTML = 'Re = ρ · V · D / μ<br>'
+    + '= ' + f2(p.rhoF, 1) + ' × ' + f2(V, 4) + ' × ' + f2(d, 5) + ' / ' + p.mu + '<br>'
+    + '= <b>' + (Re < 10 ? f2(Re, 3) : f2(Re, 1)) + '</b>';
+  $('c-cd').innerHTML = 'C<sub>D</sub> = 4 · (ρ<sub>공</sub> − ρ) · g · D / (3 · ρ · V²)<br>'
+    + '= 4 × (' + f2(p.rhoS, 0) + ' − ' + f2(p.rhoF, 1) + ') × 9.81 × ' + f2(d, 5) + ' / (3 × ' + f2(p.rhoF, 1) + ' × ' + f2(V, 4) + '²)<br>'
+    + '= <b>' + (cdM < 10 ? f2(cdM, 3) : f2(cdM, 1)) + '</b>';
+  $('t-re').textContent = Re < 10 ? f2(Re, 3) : f2(Re, 1);
+  $('t-cdm').textContent = cdM < 10 ? f2(cdM, 3) : f2(cdM, 1);
+  $('t-cdc').textContent = cdC < 10 ? f2(cdC, 3) : f2(cdC, 1);
+  $('t-diff').textContent = (diff > 0 ? '+' : '') + f2(diff, 0) + '%';
 
-  if(vel.length<2)return;
-  const tMax=vel[vel.length-1].t;
-  const vMax=Math.max.apply(null,vel.map(function(p){return Math.abs(p.v);}))*1.2;
-
-  function xOf(t){return pad.l+t/tMax*pw;}
-  function yOf(v){return pad.t+ph-v/vMax*ph;}
-
-  ctx.strokeStyle=grid;ctx.lineWidth=0.5;
-  for(let i=0;i<=5;i++){
-    const y=pad.t+ph*i/5;
-    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();
-  }
-
-  ctx.strokeStyle=accentC;ctx.lineWidth=2;ctx.beginPath();
-  vel.forEach(function(p,i){
-    const x=xOf(p.t),y=yOf(p.v);
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  $('src-list').innerHTML =
+    '<li>액체 (' + f.label + '): 밀도 ' + f2(p.rhoF, 1) + ' kg/m³, 점성 ' + p.mu + ' Pa·s. 관 라벨의 비중 × 물 밀도 998.2, 20 °C로 가정하고 Volk &amp; Kähler (2018) 식으로 계산.</li>'
+    + '<li>공: 지름 ' + p.dMm + ' mm (공 봉투 라벨), 밀도 ' + p.rhoS + ' kg/m³ (순수 알루미늄 값, 합금 종류는 확인 못 함).</li>'
+    + '<li>두 선 사이: ' + p.gapCm + ' cm (실험대 자로 잰 값, 1.04 ft).</li>'
+    + '<li>슬로모 배율: ' + p.slow + (p.slow === 1 ? ' (보통 속도 영상)' : ' (실험실 아이폰 슬로모 영상에서 잰 값: 공의 속도가 슬로모가 끝나는 순간 3.91배 빨라짐)') + '.</li>';
+  [['e-rhof','rhoF'],['e-mu','mu'],['e-d','dMm'],['e-rhos','rhoS'],['e-gap','gapCm'],['e-slow','slow']].forEach(([id, k]) => {
+    const el = $(id); if (document.activeElement !== el) el.value = p[k];
   });
-  ctx.stroke();
 
-  ctx.strokeStyle=vtColor;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
-  ctx.beginPath();ctx.moveTo(pad.l,yOf(vt));ctx.lineTo(pad.l+pw,yOf(vt));ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle=vtColor;ctx.font='bold 11px system-ui';ctx.textAlign='left';
-  ctx.fillText('Vt = '+vt.toFixed(1)+' cm/s',pad.l+8,yOf(vt)-6);
+  drawCharts(pxPerCm);
+  document.body.dataset.result = JSON.stringify({ ok:true, n:P.length, tTop:S.cross.tTop, tBot:S.cross.tBot,
+    dtReal, vCm, Re, cdM, cdC, xs:[Math.min(...P.map(q => q.x)), Math.max(...P.map(q => q.x))] });
+}
+[['e-rhof','rhoF'],['e-mu','mu'],['e-d','dMm'],['e-rhos','rhoS'],['e-gap','gapCm'],['e-slow','slow']].forEach(([id, k]) => {
+  $(id).addEventListener('input', e => { const v = parseFloat(e.target.value); if (v > 0){ S.p[k] = v; recompute(); } });
+});
 
-  ctx.fillStyle=txt;ctx.font='11px system-ui';ctx.textAlign='center';
-  for(let i=0;i<=5;i++){
-    ctx.fillText((tMax*i/5).toFixed(2)+'s',xOf(tMax*i/5),pad.t+ph+18);
+/* ---------- 그래프 ---------- */
+function chartCtx(id, ratio){
+  const c = $(id), w = c.parentElement.clientWidth - 28 || 320, h = Math.round(w * ratio);
+  const dpr = window.devicePixelRatio || 1;
+  c.width = w * dpr; c.height = h * dpr; c.style.height = h + 'px';
+  const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  x.clearRect(0, 0, w, h);
+  return { x, w, h };
+}
+function axes(x, w, h, pad, xr, yr, xl, yl, xt, yt){
+  const X = v => pad.l + (v - xr[0]) / (xr[1] - xr[0]) * (w - pad.l - pad.r);
+  const Y = v => pad.t + (v - yr[0]) / (yr[1] - yr[0]) * (h - pad.t - pad.b);
+  x.strokeStyle = css('--line'); x.lineWidth = 1; x.fillStyle = css('--sub'); x.font = '12px system-ui,sans-serif';
+  xt.forEach(v => { x.beginPath(); x.moveTo(X(v), pad.t); x.lineTo(X(v), h - pad.b); x.stroke();
+    x.textAlign = 'center'; x.fillText(v, X(v), h - pad.b + 16); });
+  yt.forEach(v => { x.beginPath(); x.moveTo(pad.l, Y(v)); x.lineTo(w - pad.r, Y(v)); x.stroke();
+    x.textAlign = 'right'; x.fillText(v, pad.l - 6, Y(v) + 4); });
+  x.textAlign = 'center'; x.fillText(xl, (pad.l + w - pad.r) / 2, h - 4);
+  x.save(); x.translate(13, (pad.t + h - pad.b) / 2); x.rotate(-Math.PI / 2); x.fillText(yl, 0, 0); x.restore();
+  return { X, Y };
+}
+function ticks(a, b, n){
+  const raw = (b - a) / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const st = [1, 2, 5, 10].map(m => m * mag).find(s => s >= raw);
+  const out = []; for (let v = Math.ceil(a / st) * st; v <= b + 1e-9; v += st) out.push(+v.toFixed(6));
+  return out;
+}
+function drawCharts(pxPerCm){
+  const p = S.p, P = S.path, t0 = S.cross.tTop;
+  const pts = P.map(q => ({ t:(q.t - t0) / p.slow, z:(q.y - S.yTop) / pxPerCm }));
+  const gap = p.gapCm;
+
+  { const { x, w, h } = chartCtx('ch-pos', 0.75), pad = { l:48, r:12, t:10, b:36 };
+    const tr = [Math.min(0, pts[0].t), Math.max(...pts.map(q => q.t))];
+    const zr = [Math.min(-2, pts[0].z), Math.max(gap + 2, pts[pts.length - 1].z)];
+    const { X, Y } = axes(x, w, h, pad, tr, zr, '시간 (초, 위 선 통과 = 0)', '위 선에서 내려온 거리 (cm)', ticks(tr[0], tr[1], 5), ticks(zr[0], zr[1], 5));
+    [[0, css('--top')], [gap, css('--bot')]].forEach(([z, col]) => { x.strokeStyle = col; x.lineWidth = 2;
+      x.beginPath(); x.moveTo(pad.l, Y(z)); x.lineTo(w - pad.r, Y(z)); x.stroke(); });
+    x.fillStyle = css('--accent');
+    pts.forEach(q => { x.beginPath(); x.arc(X(q.t), Y(q.z), 2.3, 0, 7); x.fill(); });
   }
-  ctx.fillText('Time (s)',pad.l+pw/2,ch-8);
-
-  ctx.textAlign='right';
-  for(let i=0;i<=5;i++){
-    ctx.fillText((vMax*i/5).toFixed(1),pad.l-8,yOf(vMax*i/5)+4);
+  { const sp = [];
+    for (let k = 0; k < pts.length; k++){
+      const win = pts.filter(q => Math.abs(q.z - pts[k].z) <= 2);
+      if (win.length < 4) continue;
+      const mt = win.reduce((s, q) => s + q.t, 0) / win.length, mz = win.reduce((s, q) => s + q.z, 0) / win.length;
+      let num = 0, den = 0; win.forEach(q => { num += (q.t - mt) * (q.z - mz); den += (q.t - mt) ** 2; });
+      if (den > 0) sp.push({ z:pts[k].z, v:num / den });
+    }
+    const { x, w, h } = chartCtx('ch-spd', 0.6), pad = { l:48, r:12, t:10, b:36 };
+    const vMean = gap / ((S.cross.tBot - S.cross.tTop) / p.slow);
+    const zr = [Math.min(-2, pts[0].z), Math.max(gap + 2, pts[pts.length - 1].z)];
+    const vmax = Math.max(vMean * 1.6, ...sp.map(q => q.v).filter(v => v < vMean * 4));
+    const { X, Y } = axes(x, w, h, pad, zr, [vmax, 0], '위 선에서 내려온 거리 (cm)', '속도 (cm/s)', ticks(zr[0], zr[1], 5), ticks(0, vmax, 4));
+    x.fillStyle = css('--line'); x.globalAlpha = .55; x.fillRect(X(0), pad.t, X(gap) - X(0), h - pad.t - pad.b); x.globalAlpha = 1;
+    x.strokeStyle = css('--ok'); x.setLineDash([6, 5]); x.lineWidth = 1.5;
+    x.beginPath(); x.moveTo(pad.l, Y(vMean)); x.lineTo(w - pad.r, Y(vMean)); x.stroke(); x.setLineDash([]);
+    x.strokeStyle = css('--accent'); x.lineWidth = 2; x.beginPath();
+    sp.filter(q => q.v < vmax).forEach((q, i) => i ? x.lineTo(X(q.z), Y(q.v)) : x.moveTo(X(q.z), Y(q.v))); x.stroke();
+    x.fillStyle = css('--ok'); x.font = 'bold 12px system-ui,sans-serif'; x.textAlign = 'left';
+    x.fillText('평균 ' + vMean.toFixed(vMean >= 10 ? 1 : 2) + ' cm/s', pad.l + 6, Y(vMean) - 6);
   }
-  ctx.save();ctx.translate(14,pad.t+ph/2);ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center';ctx.font='12px system-ui';
-  ctx.fillText('Velocity (cm/s)',0,0);ctx.restore();
 }
 
-function drawCdChart(Re,cdMeas){
-  const c=document.getElementById('cd-chart');
-  const dpr=window.devicePixelRatio||1;
-  const cw=600,ch=400;
-  c.width=cw*dpr;c.height=ch*dpr;
-  c.style.width=cw+'px';c.style.height=ch+'px';
-  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
-
-  const dk=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  const bg=dk?'#1b1f26':'#fff';
-  const grid=dk?'#2c323b':'#e5e7eb';
-  const txt=dk?'#9aa4b2':'#5b6472';
-  const curveC=dk?'#4d8dff':'#1857c4';
-  const dotC='#ff4444';
-
-  ctx.fillStyle=bg;ctx.fillRect(0,0,cw,ch);
-  const pad={t:30,r:30,b:50,l:60};
-  const pw=cw-pad.l-pad.r,ph=ch-pad.t-pad.b;
-  const reMin=0.01,reMax=10000,cdMin=0.1,cdMax=1000;
-  function xOf(r){return pad.l+(Math.log10(r)-Math.log10(reMin))/(Math.log10(reMax)-Math.log10(reMin))*pw;}
-  function yOf(cd){return pad.t+ph-(Math.log10(cd)-Math.log10(cdMin))/(Math.log10(cdMax)-Math.log10(cdMin))*ph;}
-
-  ctx.strokeStyle=grid;ctx.lineWidth=0.5;
-  for(let e=-2;e<=4;e++){const x=xOf(Math.pow(10,e));ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ph);ctx.stroke();}
-  for(let e=-1;e<=3;e++){const y=yOf(Math.pow(10,e));ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();}
-
-  ctx.strokeStyle=curveC;ctx.lineWidth=2.5;ctx.beginPath();
-  let first=true;
-  for(let lr=-2;lr<=3.5;lr+=0.02){
-    const r=Math.pow(10,lr);
-    const cd=24/r+3/Math.sqrt(r)+0.34;
-    if(cd<cdMin||cd>cdMax)continue;
-    first?(ctx.moveTo(xOf(r),yOf(cd)),first=false):ctx.lineTo(xOf(r),yOf(cd));
-  }
-  ctx.stroke();
-
-  if(Re>0 && cdMeas>0 && Re>=reMin && Re<=reMax && cdMeas>=cdMin && cdMeas<=cdMax){
-    ctx.beginPath();ctx.arc(xOf(Re),yOf(cdMeas),8,0,Math.PI*2);
-    ctx.fillStyle=dotC;ctx.fill();
-    ctx.strokeStyle=bg;ctx.lineWidth=2;ctx.stroke();
-    ctx.fillStyle=txt;ctx.font='bold 11px system-ui';ctx.textAlign='left';
-    ctx.fillText('Your measurement',xOf(Re)+12,yOf(cdMeas)+4);
-  }
-
-  ctx.fillStyle=txt;ctx.font='11px system-ui';ctx.textAlign='center';
-  [-2,-1,0,1,2,3,4].forEach(function(e){
-    const lbl=Math.pow(10,e);
-    ctx.fillText(lbl>=1?lbl.toString():'0.'+('0'.repeat(-e-1))+'1',xOf(lbl),pad.t+ph+18);
-  });
-  ctx.fillText('Re',pad.l+pw/2,ch-8);
-
-  ctx.textAlign='right';
-  [-1,0,1,2,3].forEach(function(e){ctx.fillText(Math.pow(10,e),pad.l-8,yOf(Math.pow(10,e))+4);});
-  ctx.save();ctx.translate(14,pad.t+ph/2);ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center';ctx.font='12px system-ui';ctx.fillText('CD',0,0);ctx.restore();
-}
-
-/* ---- PLAYBACK ---- */
+/* ---------- 확인용 재생 ---------- */
 function setupPlayback(){
-  const c=document.getElementById('playback-canvas');
-  c.width=W;c.height=H;
-  const scrub=document.getElementById('playback-scrub');
-  scrub.max=track.length-1;scrub.value=0;
-  drawPlaybackFrame(0);
-  scrub.addEventListener('input',function(){drawPlaybackFrame(+this.value);});
-  document.getElementById('show-trail').addEventListener('change',function(){drawPlaybackFrame(+scrub.value);});
+  const s = $('pb-k');
+  s.max = S.path.length - 1;
+  let k = S.path.findIndex(q => q.y >= (S.yTop + S.yBot) / 2);
+  s.value = Math.max(0, k);
+  s.oninput = () => drawPb(+s.value);
+  drawPb(+s.value);
+}
+let pbBusy = false, pbNext = null;
+async function drawPb(k){
+  if (pbBusy){ pbNext = k; return; }
+  pbBusy = true;
+  const q = S.path[k];
+  await seek(q.t);
+  const c = $('pb'), x = c.getContext('2d');
+  const gap = S.yBot - S.yTop;
+  const sy = Math.max(0, S.yTop - 0.15 * gap), sh = Math.min(S.vh - sy, 1.3 * gap);
+  const sx = Math.max(0, Math.min(S.vw - 0.9 * sh, S.xc - 0.45 * sh)), sw = Math.min(S.vw - sx, 0.9 * sh);
+  const sc = 540 / sh; c.width = Math.round(sw * sc); c.height = 540;
+  x.drawImage(vid, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  [[S.yTop, css('--top')], [S.yBot, css('--bot')]].forEach(([y, col]) => { x.strokeStyle = col; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(0, (y - sy) * sc); x.lineTo(c.width, (y - sy) * sc); x.stroke(); });
+  x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 1.5; x.beginPath();
+  S.path.slice(0, k + 1).forEach((p, i) => { const X = (p.x - sx) * sc, Y = (p.y - sy) * sc; i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+  x.stroke();
+  x.strokeStyle = css('--ball'); x.lineWidth = 3;
+  x.beginPath(); x.arc((q.x - sx) * sc, (q.y - sy) * sc, 12, 0, 7); x.stroke();
+  $('pb-t').textContent = '영상 ' + q.t.toFixed(2) + '초 · 실제 시간 ' + (q.t / S.p.slow).toFixed(2) + '초';
+  pbBusy = false;
+  if (pbNext != null){ const n = pbNext; pbNext = null; drawPb(n); }
 }
 
-async function drawPlaybackFrame(idx){
-  if(idx>=track.length)return;
-  const c=document.getElementById('playback-canvas');
-  const ctx=c.getContext('2d');
-  await seekAndDraw(probe,track[idx].t_vid,c);
-
-  ctx.strokeStyle='rgba(255,68,68,0.3)';ctx.lineWidth=1;
-  const ly1=(calibY1/H)*c.height, ly2=(calibY2/H)*c.height;
-  ctx.beginPath();ctx.moveTo(0,ly1);ctx.lineTo(c.width,ly1);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(0,ly2);ctx.lineTo(c.width,ly2);ctx.stroke();
-
-  if(document.getElementById('show-trail').checked && idx>0){
-    ctx.strokeStyle='rgba(255,68,68,0.6)';ctx.lineWidth=2;ctx.beginPath();
-    ctx.moveTo(track[0].x,track[0].y_px);
-    for(let i=1;i<=idx;i++) ctx.lineTo(track[i].x,track[i].y_px);
-    ctx.stroke();
-  }
-
-  ctx.fillStyle='#ff4444';ctx.beginPath();
-  ctx.arc(track[idx].x,track[idx].y_px,6,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
-}
+if (qs.get('demo') && DEMOS[qs.get('demo')]) startDemo(qs.get('demo'));
 </script>
 </body>
 </html>

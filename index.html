@@ -1,376 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ADF Lab</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
-  :root {
-    --bg: #f5f6f8;
-    --fg: #1a1a2e;
-    --card-bg: #ffffff;
-    --card-border: #e0e2e7;
-    --accent: #2563eb;
-    --muted: #6b7280;
-    --tag-bg: #eef2ff;
-    --tag-fg: #4361a8;
-    --illust-bg: #f0f4f8;
-    --water: #60a5fa;
-    --water-deep: #2563eb;
-    --metal: #94a3b8;
-    --metal-dark: #64748b;
-    --beam: #e44;
-    --duck-body: #facc15;
-    --duck-beak: #f97316;
-    --arrow: #3b82f6;
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#14171c; --sub:#5b6472; --line:#dfe3e9;
+  --accent:#1857c4; --panel:#eef3f9;
+  --water:#cfe6fb; --water-line:#2b8fd6; --steel:#3b4350; --plate:#d98b1f;
+  --duck:#ffc933; --duck-dark:#e8a800; --beak:#f07c1a; --flow:#2b8fd6;
+  --top:#16a34a; --bot:#dc2626; --ball:#3b4350;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151a; --card:#1b1f26; --ink:#eef1f5; --sub:#9aa4b2; --line:#2c323b;
+    --accent:#4d8dff; --panel:#161b23;
+    --water:#173450; --water-line:#4fb0f0; --steel:#c9d1dc; --plate:#f0a63a;
+    --duck:#ffc933; --duck-dark:#e0a000; --beak:#f28c28; --flow:#4fb0f0;
+    --top:#4ade80; --bot:#f87171; --ball:#e5e9ef; color-scheme:dark;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0d0f14;
-      --fg: #e2e4e9;
-      --card-bg: #171a23;
-      --card-border: #282c38;
-      --accent: #6dafff;
-      --muted: #8b92a0;
-      --tag-bg: #1c2234;
-      --tag-fg: #8bb8f8;
-      --illust-bg: #1a1e2a;
-      --water: #3b82c4;
-      --water-deep: #2563a0;
-      --metal: #64748b;
-      --metal-dark: #475569;
-      --beam: #c43;
-      --duck-body: #eab308;
-      --duck-beak: #e5720a;
-      --arrow: #5b9cf0;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #0d0f14;
-    --fg: #e2e4e9;
-    --card-bg: #171a23;
-    --card-border: #282c38;
-    --accent: #6dafff;
-    --muted: #8b92a0;
-    --tag-bg: #1c2234;
-    --tag-fg: #8bb8f8;
-    --illust-bg: #1a1e2a;
-    --water: #3b82c4;
-    --water-deep: #2563a0;
-    --metal: #64748b;
-    --metal-dark: #475569;
-    --beam: #c43;
-    --duck-body: #eab308;
-    --duck-beak: #e5720a;
-    --arrow: #5b9cf0;
-    color-scheme: dark;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--fg);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    margin: 0;
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .container {
-    max-width: 680px;
-    width: 100%;
-    padding: 48px 0 40px;
-  }
-
-  header { margin-bottom: 36px; }
-
-  .course-tag {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--tag-fg);
-    background: var(--tag-bg);
-    padding: 3px 10px;
-    border-radius: 4px;
-    margin-bottom: 12px;
-  }
-
-  h1 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0 0 6px;
-    letter-spacing: -0.02em;
-  }
-
-  .subtitle {
-    color: var(--muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  .labs {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .lab-card {
-    display: block;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    text-decoration: none;
-    color: var(--fg);
-    overflow: hidden;
-    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-  }
-
-  .lab-card:hover, .lab-card:focus-visible {
-    border-color: var(--accent);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
-    outline: none;
-  }
-
-  .lab-illust {
-    width: 100%;
-    height: 180px;
-    background: var(--illust-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid var(--card-border);
-  }
-
-  .lab-illust svg {
-    max-width: 100%;
-    height: 160px;
-  }
-
-  .lab-info {
-    padding: 20px 24px 22px;
-  }
-
-  .lab-info h2 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0 0 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .lab-num {
-    font-variant-numeric: tabular-nums;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--accent);
-    background: var(--tag-bg);
-    padding: 2px 8px;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-
-  .lab-info p {
-    color: var(--muted);
-    font-size: 0.82rem;
-    margin: 0 0 10px;
-    line-height: 1.5;
-  }
-
-  .lab-arrow {
-    color: var(--accent);
-    font-size: 0.82rem;
-    font-weight: 500;
-    transition: color 0.15s;
-  }
-
-  .lab-card:hover .lab-arrow { opacity: 0.8; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .lab-card { transition: none; }
-    .lab-card:hover { transform: none; }
-  }
-
-  footer {
-    margin-top: auto;
-    padding: 32px 0 24px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.72rem;
-  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151a; --card:#1b1f26; --ink:#eef1f5; --sub:#9aa4b2; --line:#2c323b;
+  --accent:#4d8dff; --panel:#161b23;
+  --water:#173450; --water-line:#4fb0f0; --steel:#c9d1dc; --plate:#f0a63a;
+  --duck:#ffc933; --duck-dark:#e0a000; --beak:#f28c28; --flow:#4fb0f0;
+  --top:#4ade80; --bot:#f87171; --ball:#e5e9ef; color-scheme:dark;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--bg);color:var(--ink);}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%;}
+main{max-width:680px;margin:0 auto;padding:36px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left));}
+.course{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent);
+  border:1px solid var(--accent);border-radius:999px;padding:3px 10px;}
+h1{font-size:28px;line-height:1.25;margin:12px 0 6px;letter-spacing:-.01em;}
+.lead{color:var(--sub);margin:0 0 26px;font-size:15px;}
+.labs{display:grid;gap:16px;}
+.lab{display:grid;grid-template-columns:200px 1fr;align-items:stretch;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:border-color .15s, transform .15s;}
+.lab:hover,.lab:focus-visible{border-color:var(--accent);transform:translateY(-1px);outline:none;}
+.pic{background:var(--panel);display:flex;align-items:center;justify-content:center;padding:10px;}
+.pic svg{width:100%;height:auto;max-height:170px;display:block;}
+.txt{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.num{font-size:13px;font-weight:700;color:var(--accent);margin:0 0 2px;}
+.txt h2{font-size:20px;line-height:1.3;margin:0 0 6px;}
+.txt p{color:var(--sub);font-size:14.5px;margin:0 0 10px;}
+.go{font-size:14.5px;font-weight:700;color:var(--accent);}
+footer{text-align:center;color:var(--sub);font-size:12.5px;padding:28px 0 8px;}
+@media (max-width:560px){
+  .lab{grid-template-columns:1fr;}
+  .pic{padding:14px 16px 6px;}
+  .pic svg{max-height:180px;}
+}
+@media (prefers-reduced-motion:reduce){.lab{transition:none;}.lab:hover{transform:none;}}
+/* 폰에서 좌우로 흔들리지 않게 */
+html,body{overflow-x:hidden;max-width:100%}
+@supports (overflow:clip){html,body{overflow-x:clip}}
+main>*,header>*,section>*,figure>*{min-width:0;max-width:100%}
+p,li,a,h1,h2,h3{overflow-wrap:anywhere;word-break:normal}
+img,svg,video,canvas{max-width:100%;height:auto}
 </style>
-
-<div class="container">
-  <header>
-    <span class="course-tag">CE 319F Fluid Mechanics</span>
-    <h1>ADF Lab</h1>
-    <p class="subtitle">AI-enabled experiment analysis tools for CE 319F laboratory sessions.</p>
-  </header>
+</head>
+<body>
+<main>
+  <span class="course">CE 319F · Elementary Fluid Mechanics</span>
+  <h1>ADF Lab</h1>
+  <p class="lead">Phone-based helpers for the CE 319F labs. Record the experiment, and the app reads the measurement from your video.</p>
 
   <div class="labs">
 
-    <!-- ===== Lab 3: Hydrostatic Pressure Apparatus ===== -->
-    <a class="lab-card" href="lab3/">
-      <div class="lab-illust">
-        <svg viewBox="15 18 400 214" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="45" y="150" width="300" height="52" fill="#22c3e6" opacity="0.13"/>
-          <line x1="25" y1="46" x2="400" y2="46" stroke="var(--fg)" stroke-width="3.5"/>
-          <rect x="58" y="37" width="34" height="9" fill="none" stroke="var(--fg)" stroke-width="1.8"/>
-          <path d="M182 35 L198 35 L190 45 Z" fill="var(--fg)"/>
-          <text x="203" y="33" fill="var(--muted)" font-size="11.5" font-family="Inter,system-ui,sans-serif">knife edge</text>
-          <text x="66" y="32" fill="var(--muted)" font-size="11.5" font-family="Inter,system-ui,sans-serif">weight deck</text>
-          <line x1="379" y1="46" x2="379" y2="196" stroke="var(--fg)" stroke-width="1.6"/>
-          <path d="M366 196 L392 196 L379 208 Z" fill="none" stroke="var(--fg)" stroke-width="1.8"/>
-          <rect x="366" y="208" width="26" height="17" fill="none" stroke="var(--fg)" stroke-width="1.8"/>
-          <text x="379" y="217" fill="var(--fg)" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Inter,system-ui,sans-serif">W</text>
-          <line x1="45" y1="57" x2="45" y2="202" stroke="var(--fg)" stroke-width="2.6"/>
-          <line x1="345" y1="57" x2="345" y2="202" stroke="var(--fg)" stroke-width="2.6"/>
-          <line x1="45" y1="202" x2="345" y2="202" stroke="var(--fg)" stroke-width="2"/>
-          <line x1="45" y1="57" x2="345" y2="57" stroke="var(--fg)" stroke-width="2" stroke-dasharray="5 4"/>
-          <line x1="45" y1="150" x2="345" y2="150" stroke="#22c3e6" stroke-width="2"/>
-          <path d="M313 141 L325 141 L319 150 Z" fill="#22c3e6"/>
-          <path d="M190 188 A142 142 0 0 0 332 46 L269 46 A79 79 0 0 1 190 125 Z" fill="var(--fg)" fill-opacity="0.10"/>
-          <path d="M190 188 A142 142 0 0 0 332 46" stroke="var(--fg)" stroke-width="3.2"/>
-          <path d="M190 125 A79 79 0 0 0 269 46" stroke="var(--fg)" stroke-width="3.2"/>
-          <line x1="190" y1="125" x2="190" y2="188" stroke="#e0a34a" stroke-width="5"/>
-          <text x="200" y="141" fill="var(--muted)" font-size="11.5" dominant-baseline="central" font-family="Inter,system-ui,sans-serif">plane surface</text>
+    <a class="lab" href="lab3/">
+      <div class="pic">
+        <svg viewBox="20 14 390 222" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hydrostatic pressure apparatus: a curved quadrant on a balance arm, partly submerged in a water tank">
+          <rect x="45" y="150" width="300" height="52" fill="var(--water)"/>
+          <line x1="45" y1="150" x2="345" y2="150" stroke="var(--water-line)" stroke-width="2.5"/>
+          <path d="M313 140 L325 140 L319 150 Z" fill="var(--water-line)"/>
+          <path d="M190 188 A142 142 0 0 0 332 46 L269 46 A79 79 0 0 1 190 125 Z" fill="var(--steel)" fill-opacity=".14"/>
+          <path d="M190 188 A142 142 0 0 0 332 46" stroke="var(--steel)" stroke-width="4"/>
+          <path d="M190 125 A79 79 0 0 0 269 46" stroke="var(--steel)" stroke-width="4"/>
+          <line x1="190" y1="125" x2="190" y2="188" stroke="var(--plate)" stroke-width="7" stroke-linecap="round"/>
+          <path d="M45 57 V202 H345 V57" stroke="var(--steel)" stroke-width="3.5" stroke-linejoin="round"/>
+          <line x1="25" y1="46" x2="400" y2="46" stroke="var(--steel)" stroke-width="5" stroke-linecap="round"/>
+          <rect x="58" y="34" width="34" height="11" rx="2" fill="var(--steel)"/>
+          <path d="M180 31 L200 31 L190 44 Z" fill="var(--steel)"/>
+          <line x1="379" y1="46" x2="379" y2="194" stroke="var(--steel)" stroke-width="2"/>
+          <path d="M365 194 L393 194 L379 207 Z" fill="none" stroke="var(--steel)" stroke-width="2.4" stroke-linejoin="round"/>
+          <rect x="366" y="208" width="26" height="20" rx="2" fill="var(--steel)"/>
         </svg>
       </div>
-      <div class="lab-info">
-        <h2><span class="lab-num">Lab 3</span> Hydrostatic Pressure</h2>
-        <p>Pressure measurement and hydrostatic force analysis on submerged surfaces.</p>
-        <span class="lab-arrow">Open app &rarr;</span>
+      <div class="txt">
+        <p class="num">Lab 3</p>
+        <h2>Hydrostatic Pressure</h2>
+        <p>Find the force of water on a submerged flat surface and where it acts.</p>
+        <span class="go">Open →</span>
       </div>
     </a>
 
-    <!-- ===== Lab 4: Flow Visualization — Rubber Duck ===== -->
-    <a class="lab-card" href="lab4/">
-      <div class="lab-illust">
-        <svg viewBox="0 0 320 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <!-- Channel walls -->
-          <rect x="0" y="65" width="320" height="90" rx="0" fill="var(--water)" opacity="0.12"/>
-          <!-- Water surface -->
-          <path d="M0 70 Q20 65 40 70 Q60 75 80 70 Q100 65 120 70 Q140 75 160 70 Q180 65 200 70 Q220 75 240 70 Q260 65 280 70 Q300 75 320 70" stroke="var(--water-deep)" stroke-width="1.5" fill="none" opacity="0.5"/>
-          <!-- Flow arrows (background) -->
-          <g opacity="0.3">
-            <line x1="10" y1="90" x2="40" y2="90" stroke="var(--arrow)" stroke-width="1.2" stroke-linecap="round"/>
-            <polygon points="40,88 45,90 40,92" fill="var(--arrow)"/>
-            <line x1="10" y1="105" x2="35" y2="105" stroke="var(--arrow)" stroke-width="1.2" stroke-linecap="round"/>
-            <polygon points="35,103 40,105 35,107" fill="var(--arrow)"/>
-            <line x1="10" y1="120" x2="30" y2="120" stroke="var(--arrow)" stroke-width="1" stroke-linecap="round"/>
-            <polygon points="30,118.5 34,120 30,121.5" fill="var(--arrow)"/>
-            <line x1="230" y1="88" x2="260" y2="88" stroke="var(--arrow)" stroke-width="1.2" stroke-linecap="round"/>
-            <polygon points="260,86 265,88 260,90" fill="var(--arrow)"/>
-            <line x1="240" y1="108" x2="270" y2="108" stroke="var(--arrow)" stroke-width="1" stroke-linecap="round"/>
-            <polygon points="270,106 275,108 270,110" fill="var(--arrow)"/>
-          </g>
-
-          <!-- === Duck (center, bigger) === -->
-          <!-- Duck body -->
-          <ellipse cx="155" cy="68" rx="28" ry="18" fill="var(--duck-body)"/>
-          <!-- Duck body highlight -->
-          <ellipse cx="150" cy="63" rx="16" ry="9" fill="white" opacity="0.15"/>
-          <!-- Duck tail -->
-          <path d="M126 60 L116 48 L130 58" fill="var(--duck-body)" stroke="var(--duck-body)" stroke-width="1.5" stroke-linejoin="round"/>
-          <!-- Duck neck -->
-          <ellipse cx="178" cy="52" rx="10" ry="14" fill="var(--duck-body)"/>
-          <!-- Duck head -->
-          <circle cx="183" cy="38" r="14" fill="var(--duck-body)"/>
-          <!-- Duck head highlight -->
-          <circle cx="180" cy="34" r="7" fill="white" opacity="0.12"/>
-          <!-- Duck eye -->
-          <circle cx="188" cy="35" r="2.5" fill="var(--fg)"/>
-          <circle cx="189" cy="34" r="0.8" fill="var(--card-bg)"/>
-          <!-- Duck beak -->
-          <ellipse cx="199" cy="40" rx="9" ry="4" fill="var(--duck-beak)"/>
-          <line x1="191" y1="40" x2="207" y2="40" stroke="var(--duck-beak)" stroke-width="0.8" opacity="0.5"/>
-          <!-- Duck wing detail -->
-          <path d="M140 62 Q150 58 162 64" stroke="var(--duck-body)" stroke-width="2" fill="none" opacity="0.4" filter="brightness(0.85)"/>
-
-          <!-- Trajectory path (dashed) -->
-          <path d="M55 72 Q90 60 130 68 Q160 74 190 64 Q220 54 275 48" stroke="var(--arrow)" stroke-width="1.8" stroke-dasharray="6 4" fill="none" opacity="0.5"/>
-          <!-- Trajectory dots -->
-          <circle cx="55" cy="72" r="3.5" fill="var(--arrow)" opacity="0.35"/>
-          <circle cx="90" cy="64" r="3.5" fill="var(--arrow)" opacity="0.45"/>
-          <circle cx="275" cy="48" r="3.5" fill="var(--arrow)" opacity="0.7"/>
-          <!-- Trajectory label -->
-          <text x="278" y="44" font-family="Space Grotesk, system-ui, sans-serif" font-size="10" font-weight="500" fill="var(--arrow)" opacity="0.7">x(t)</text>
-
-          <!-- Small second duck (background, showing multiple tracers) -->
-          <g opacity="0.3" transform="translate(60, 2) scale(0.4)">
-            <ellipse cx="155" cy="68" rx="28" ry="18" fill="var(--duck-body)"/>
-            <path d="M126 60 L116 48 L130 58" fill="var(--duck-body)"/>
-            <circle cx="183" cy="38" r="14" fill="var(--duck-body)"/>
-            <ellipse cx="199" cy="40" rx="9" ry="4" fill="var(--duck-beak)"/>
-            <circle cx="188" cy="35" r="2.5" fill="var(--fg)"/>
+    <a class="lab" href="lab4/">
+      <div class="pic">
+        <svg viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A rubber duck floating on flowing water, with its path traced behind it">
+          <path d="M84 136 C82 112 88 94 102 92 C112 91 116 102 126 104 L198 104 C204 82 214 66 236 64 C262 62 276 80 274 100 C272 116 262 124 250 128 L246 136 Z" fill="var(--duck)"/>
+          <path d="M120 112 C138 100 168 102 182 116 C166 128 136 128 120 112 Z" fill="var(--duck-dark)"/>
+          <path d="M268 88 C284 84 298 88 300 94 C300 100 288 104 270 102 Z" fill="var(--beak)"/>
+          <circle cx="248" cy="84" r="5" fill="#14171c"/>
+          <circle cx="250" cy="82" r="1.7" fill="#fff"/>
+          <rect x="0" y="136" width="320" height="64" fill="var(--water)"/>
+          <path d="M0 136 C20 131 40 131 60 136 S100 141 120 136 S160 131 180 136 S220 141 240 136 S280 131 300 136 S320 140 320 136" stroke="var(--water-line)" stroke-width="2.5"/>
+          <g stroke="var(--flow)" stroke-width="2.5" stroke-linecap="round" opacity=".75">
+            <path d="M30 160 H110"/><path d="M104 155 L111 160 L104 165"/>
+            <path d="M150 174 H240"/><path d="M234 169 L241 174 L234 179"/>
+            <path d="M60 188 H130"/><path d="M124 183 L131 188 L124 193"/>
+            <path d="M200 156 H290"/><path d="M284 151 L291 156 L284 161"/>
           </g>
         </svg>
       </div>
-      <div class="lab-info">
-        <h2><span class="lab-num">Lab 4</span> Flow Visualization</h2>
-        <p>Rubber duck tracking for velocity field extraction, streamlines, pathlines, and streaklines.</p>
-        <span class="lab-arrow">Open app &rarr;</span>
+      <div class="txt">
+        <p class="num">Lab 4</p>
+        <h2>Flow Visualization</h2>
+        <p>Track rubber ducks on video to see streamlines, pathlines, and streaklines.</p>
+        <span class="go">Open →</span>
       </div>
     </a>
 
-    <!-- ===== Lab 8: Drag & Lift — Falling Sphere ===== -->
-    <a class="lab-card" href="lab8/">
-      <div class="lab-illust">
-        <svg viewBox="0 0 320 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <!-- Tube -->
-          <rect x="120" y="10" width="80" height="140" rx="6" stroke="var(--metal)" stroke-width="2" fill="var(--water)" opacity="0.15"/>
-          <rect x="120" y="10" width="80" height="140" rx="6" stroke="var(--metal)" stroke-width="2" fill="none"/>
-          <!-- Fluid fill -->
-          <rect x="122" y="25" width="76" height="123" rx="4" fill="var(--water)" opacity="0.25"/>
-          <!-- Marker lines (red/green) -->
-          <line x1="118" y1="45" x2="202" y2="45" stroke="#ef4444" stroke-width="2"/>
-          <line x1="118" y1="120" x2="202" y2="120" stroke="#22c55e" stroke-width="2"/>
-          <!-- Distance label -->
-          <line x1="108" y1="45" x2="108" y2="120" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="3 2"/>
-          <polygon points="108,47 106,52 110,52" fill="var(--muted)"/>
-          <polygon points="108,118 106,113 110,113" fill="var(--muted)"/>
-          <text x="100" y="86" text-anchor="end" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--muted)">31.6 cm</text>
-          <!-- Falling sphere with motion trail -->
-          <circle cx="160" cy="35" r="4" fill="var(--metal)" opacity="0.2"/>
-          <circle cx="160" cy="50" r="4" fill="var(--metal)" opacity="0.3"/>
-          <circle cx="160" cy="65" r="4" fill="var(--metal)" opacity="0.4"/>
-          <circle cx="160" cy="80" r="5" fill="var(--metal)" opacity="0.6"/>
-          <circle cx="160" cy="95" r="5.5" fill="var(--arrow)"/>
-          <!-- Velocity arrow -->
-          <line x1="175" y1="80" x2="175" y2="105" stroke="var(--arrow)" stroke-width="1.8" stroke-linecap="round"/>
-          <polygon points="172,105 175,112 178,105" fill="var(--arrow)"/>
-          <text x="182" y="96" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--arrow)">V</text>
-          <!-- Drag arrow (upward) -->
-          <line x1="145" y1="105" x2="145" y2="82" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
-          <polygon points="142,82 145,75 148,82" fill="#ef4444"/>
-          <text x="138" y="72" text-anchor="end" font-family="Inter, system-ui, sans-serif" font-size="8" fill="#ef4444">F<tspan font-size="6" dy="2">D</tspan></text>
-          <!-- Weight arrow (downward) -->
-          <line x1="145" y1="95" x2="145" y2="118" stroke="var(--arrow)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
-          <polygon points="142,118 145,125 148,118" fill="var(--arrow)" opacity="0.6"/>
-          <!-- Labels -->
-          <text x="215" y="45" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="#ef4444">upper</text>
-          <text x="215" y="120" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="#22c55e">lower</text>
+    <a class="lab" href="lab8/">
+      <div class="pic">
+        <svg viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A ball falling at constant speed through a liquid-filled tube between two marker lines">
+          <rect x="120" y="22" width="64" height="166" rx="10" fill="var(--water)"/>
+          <rect x="120" y="10" width="64" height="178" rx="10" stroke="var(--steel)" stroke-width="3.5"/>
+          <line x1="122" y1="22" x2="182" y2="22" stroke="var(--water-line)" stroke-width="2.5"/>
+          <line x1="110" y1="58" x2="194" y2="58" stroke="var(--top)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="110" y1="150" x2="194" y2="150" stroke="var(--bot)" stroke-width="4" stroke-linecap="round"/>
+          <g fill="var(--ball)">
+            <circle cx="152" cy="36" r="7" opacity=".18"/>
+            <circle cx="152" cy="62" r="7" opacity=".28"/>
+            <circle cx="152" cy="85" r="7" opacity=".4"/>
+            <circle cx="152" cy="108" r="7" opacity=".55"/>
+            <circle cx="152" cy="131" r="7" opacity=".75"/>
+            <circle cx="152" cy="154" r="7"/>
+          </g>
+          <g stroke="var(--sub)" stroke-width="2" stroke-linecap="round">
+            <line x1="214" y1="58" x2="214" y2="150"/>
+            <line x1="207" y1="58" x2="221" y2="58"/>
+            <line x1="207" y1="150" x2="221" y2="150"/>
+          </g>
+          <text x="228" y="109" fill="var(--sub)" font-size="17" font-weight="700" font-family="-apple-system,'Segoe UI',system-ui,sans-serif">31.6 cm</text>
+          <text x="98" y="64" text-anchor="end" fill="var(--top)" font-size="17" font-weight="700" font-family="-apple-system,'Segoe UI',system-ui,sans-serif">t₁</text>
+          <text x="98" y="156" text-anchor="end" fill="var(--bot)" font-size="17" font-weight="700" font-family="-apple-system,'Segoe UI',system-ui,sans-serif">t₂</text>
         </svg>
       </div>
-      <div class="lab-info">
-        <h2><span class="lab-num">Lab 8</span> Drag &amp; Lift</h2>
-        <p>Falling sphere tracking for terminal velocity, Reynolds number, and drag coefficient.</p>
-        <span class="lab-arrow">Open app &rarr;</span>
+      <div class="txt">
+        <p class="num">Lab 8</p>
+        <h2>Drag on a Falling Sphere</h2>
+        <p>Measure how fast a ball sinks through glycerin, then find its Reynolds number and drag coefficient.</p>
+        <span class="go">Open →</span>
       </div>
     </a>
 
   </div>
-</div>
-
-<footer>
-  ADF Lab &middot; The University of Texas at Austin
-</footer>
+  <footer>ADF Lab · The University of Texas at Austin</footer>
+</main>
+</body>
+</html>
