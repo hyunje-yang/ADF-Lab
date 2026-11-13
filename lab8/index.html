@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Lab 8: Drag &amp; Lift</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#14171c; --sub:#5b6472; --line:#dfe3e9;
+  --accent:#1857c4; --accent-ink:#ffffff; --ok:#0f7a4a; --warn:#a35b00; --bad:#b4232a;
+  --cyan:#0d8ea8; --mag:#b3239c;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#12151a;--card:#1b1f26;--ink:#eef1f5;--sub:#9aa4b2;--line:#2c323b;
+  --accent:#4d8dff;--accent-ink:#07101f;--ok:#4fd08a;--warn:#e0a34a;--bad:#ff7b7b;
+  --cyan:#3fc9e6;--mag:#ee7ad6;color-scheme:dark;}
+}
+:root[data-theme="dark"]{--bg:#12151a;--card:#1b1f26;--ink:#eef1f5;--sub:#9aa4b2;--line:#2c323b;
+  --accent:#4d8dff;--accent-ink:#07101f;--ok:#4fd08a;--warn:#e0a34a;--bad:#ff7b7b;
+  --cyan:#3fc9e6;--mag:#ee7ad6;color-scheme:dark;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+     font-size:16px;line-height:1.55;padding-bottom:env(safe-area-inset-bottom);}
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);
+       padding:10px 14px;display:flex;align-items:center;gap:10px;
+       padding-top:calc(10px + env(safe-area-inset-top));}
+header .ttl{font-weight:700;font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+header .tag{font-size:12px;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 9px;font-weight:700;}
+header .hbtn{flex:none;border:1px solid var(--line);background:var(--card);color:var(--accent);
+       font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px;cursor:pointer;line-height:1;}
+header .hbtn:active{background:var(--bg);}
+main{padding:14px 14px 90px;max-width:640px;margin:0 auto;}
+.screen{display:none;} .screen.on{display:block;}
+h2{font-size:19px;margin:2px 0 10px;line-height:1.35;}
+h3{font-size:15px;margin:18px 0 6px;color:var(--sub);}
+p{margin:8px 0;}
+.sub{color:var(--sub);font-size:14px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0;}
+.card.tight{padding:10px 12px;}
+button{font:inherit;}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+.btn{display:block;width:100%;padding:15px 16px;border-radius:12px;border:1px solid var(--accent);
+     background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px;margin-top:10px;cursor:pointer;text-align:center;}
+.btn.ghost{background:transparent;color:var(--accent);}
+.btn.sm{padding:11px 12px;font-size:15px;}
+.btn:disabled{opacity:.4;}
+.row{display:flex;gap:10px;} .row>*{flex:1;min-width:0;}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--sub);}
+.pill.ok{color:var(--ok);border-color:var(--ok);} .pill.warn{color:var(--warn);border-color:var(--warn);} .pill.bad{color:var(--bad);border-color:var(--bad);}
+ul{padding-left:20px;margin:8px 0;} li{margin:5px 0;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right;}
+th:first-child,td:first-child{text-align:left;}
+thead th{color:var(--sub);font-weight:600;font-size:12.5px;}
+td.big{font-weight:700;}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed var(--line);}
+.kv:last-child{border:none;}
+.kv .k{color:var(--sub);font-size:14px;}
+.kv .v{font-weight:600;font-size:14px;}
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px;font-weight:600;}
+input[type="number"],select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:16px;font-family:inherit;}
+input:focus,select:focus{border-color:var(--accent);}
+.eq{font-family:Georgia,"Times New Roman",serif;font-style:italic;background:var(--bg);padding:8px 12px;border-radius:8px;margin:8px 0;font-size:15px;line-height:1.7;overflow-wrap:anywhere;}
+.result-val{font-size:22px;font-weight:700;margin:4px 0;}
+.result-label{font-size:12px;color:var(--sub);margin:0;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;margin:10px 0;}
+.result-box{padding:10px;background:var(--bg);border-radius:10px;}
+.pct-diff{font-size:14px;font-weight:700;}
+.pct-diff.ok{color:var(--ok);} .pct-diff.warn{color:var(--warn);} .pct-diff.bad{color:var(--bad);}
+canvas{display:block;border-radius:10px;max-width:100%;}
+.progress{height:6px;background:var(--line);border-radius:3px;margin:10px 0;overflow:hidden;}
+.progress .bar{height:100%;background:var(--accent);border-radius:3px;transition:width 0.2s;}
+.tap-hint{position:absolute;color:var(--accent);font-size:13px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.marker-line{position:absolute;left:0;right:0;height:2px;background:var(--accent);pointer-events:none;}
+.canvas-wrap{position:relative;display:inline-block;width:100%;}
+.canvas-wrap canvas{width:100%;height:auto;}
+.sens-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
+.sens-row input[type="range"]{flex:1;accent-color:var(--accent);}
+.sens-row .val{font-weight:700;font-size:14px;min-width:36px;text-align:center;}
+.overlay-toggle{display:flex;align-items:center;gap:8px;font-size:14px;margin:8px 0;cursor:pointer;color:var(--sub);}
+.overlay-toggle input{accent-color:var(--accent);}
+</style>
+</head>
+<body>
+<header>
+  <span class="ttl">Lab 8: Drag &amp; Lift</span>
+  <span class="tag">CE 319F</span>
+  <button class="hbtn" onclick="location.href='../'">Home</button>
+</header>
+
+<main>
+<!-- ===== INTRO ===== -->
+<div class="screen on" id="s-intro">
+  <h2>Drag &amp; Lift</h2>
+  <p class="sub">Record a sphere falling through fluid. The app tracks it automatically and calculates terminal velocity, Re, and C<sub>D</sub>.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">How It Works</h3>
+    <ol>
+      <li><strong>Record</strong> a slo-mo video of the ball dropping through the tube</li>
+      <li><strong>Calibrate</strong> by tapping the two marker lines on the tube</li>
+      <li>The app <strong>auto-tracks</strong> the ball frame by frame</li>
+      <li>Get <strong>velocity profile</strong>, terminal velocity, Re, and C<sub>D</sub></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Theory</h3>
+    <p>At terminal velocity, drag force = submerged weight:</p>
+    <div class="eq">F<sub>D</sub> = &frac12; C<sub>D</sub> &rho; V<sup>2</sup> A = (&rho;<sub>s</sub> &minus; &rho;<sub>f</sub>) &middot; (&pi;/6) D&sup3; &middot; g</div>
+    <p>For smooth spheres with Re &lt; 1000:</p>
+    <div class="eq">C<sub>D</sub> = 24/Re + 3/&radic;Re + 0.34</div>
+  </div>
+
+  <button class="btn" onclick="show('s-setup')">Start &rarr;</button>
+</div>
+
+<!-- ===== SETUP ===== -->
+<div class="screen" id="s-setup">
+  <h2>Experiment Setup</h2>
+  <p class="sub">Select your test and enter fluid/sphere properties.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Fluid</h3>
+    <label for="fluid-sel">Select fluid</label>
+    <select id="fluid-sel" onchange="fillFluid()">
+      <option value="gly">Glycerin (&rho;=1235, &mu;=1.261)</option>
+      <option value="mix">Glycerin-Water Mix (&rho;=1192, &mu;=0.0055)</option>
+      <option value="custom">Custom</option>
+    </select>
+    <div class="row">
+      <div><label for="f-rho">&rho;<sub>fluid</sub> (kg/m&sup3;)</label><input type="number" id="f-rho" value="1235" step="any"></div>
+      <div><label for="f-mu">&mu;<sub>fluid</sub> (N&middot;s/m&sup2;)</label><input type="number" id="f-mu" value="1.261" step="any"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Sphere</h3>
+    <select id="sphere-sel" onchange="fillSphere()">
+      <option value="steel">Steel (&rho;=7820, D=3.94 mm)</option>
+      <option value="light">Light sphere (&rho;=2830, D=3.94 mm)</option>
+      <option value="alum">Aluminum (&rho;=2700, D=6.35 mm)</option>
+      <option value="custom">Custom</option>
+    </select>
+    <div class="row">
+      <div><label for="s-rho">&rho;<sub>sphere</sub> (kg/m&sup3;)</label><input type="number" id="s-rho" value="7820" step="any"></div>
+      <div><label for="s-d">D (mm)</label><input type="number" id="s-d" value="3.94" step="any"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Slo-Mo Factor</h3>
+    <p class="sub">How much slower is the slo-mo section compared to real time? (iPhone 240fps &asymp; 4&times;, measured &asymp; 3.91&times;)</p>
+    <label for="slowf">Slow-motion factor</label>
+    <input type="number" id="slowf" value="4" step="any">
+  </div>
+
+  <button class="btn" onclick="saveSetup();show('s-video')">Record / Upload Video &rarr;</button>
+  <button class="btn ghost" onclick="show('s-intro')">&larr; Back</button>
+</div>
+
+<!-- ===== VIDEO ===== -->
+<div class="screen" id="s-video">
+  <h2>Upload Video</h2>
+  <p class="sub">Record or choose a slo-mo video of the ball falling through the tube.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Record Now</h3>
+    <p class="sub">Opens your camera in slo-mo mode (set slo-mo in your camera app first).</p>
+    <label class="btn sm" style="cursor:pointer">
+      Record Video
+      <input type="file" accept="video/*" capture="environment" id="vid-capture" style="display:none" onchange="onVid(this)">
+    </label>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Or Choose Existing</h3>
+    <label class="btn sm ghost" style="cursor:pointer">
+      Choose from Files
+      <input type="file" accept="video/*" id="vid-file" style="display:none" onchange="onVid(this)">
+    </label>
+  </div>
+
+  <div id="vid-preview" style="display:none" class="card">
+    <h3 style="margin-top:0">Preview</h3>
+    <video id="preview-player" controls playsinline style="width:100%;border-radius:8px;"></video>
+    <p class="sub" id="vid-info"></p>
+    <button class="btn" onclick="startCalibrate()">Calibrate Marker Lines &rarr;</button>
+  </div>
+
+  <button class="btn ghost" onclick="show('s-setup')">&larr; Back</button>
+</div>
+
+<!-- ===== CALIBRATE ===== -->
+<div class="screen" id="s-calib">
+  <h2>Calibrate</h2>
+  <p class="sub" id="calib-instruction">Tap the <strong>upper marker line</strong> on the tube (the first line the ball passes).</p>
+
+  <div class="canvas-wrap" id="calib-wrap">
+    <canvas id="calib-canvas"></canvas>
+    <div class="marker-line" id="line1" style="display:none"></div>
+    <div class="marker-line" id="line2" style="display:none"></div>
+  </div>
+
+  <div class="card" id="calib-dist-card" style="display:none">
+    <label for="marker-dist">Distance between markers (cm)</label>
+    <input type="number" id="marker-dist" value="31.6" step="any">
+    <p class="sub">Default 31.6 cm (1.04 ft, the red-green line distance on the tube).</p>
+    <button class="btn" onclick="startTracking()">Track Ball &rarr;</button>
+  </div>
+
+  <button class="btn ghost" onclick="show('s-video')">&larr; Back</button>
+</div>
+
+<!-- ===== TRACKING ===== -->
+<div class="screen" id="s-track">
+  <h2>Tracking</h2>
+  <p class="sub">Detecting the ball in each frame...</p>
+  <div class="progress"><div class="bar" id="track-bar" style="width:0%"></div></div>
+  <p class="sub" id="track-status">Preparing...</p>
+  <div class="canvas-wrap">
+    <canvas id="track-canvas"></canvas>
+  </div>
+
+  <div class="card" id="sens-card" style="display:none">
+    <h3 style="margin-top:0">Detection Sensitivity</h3>
+    <p class="sub">If tracking misses the ball or picks up noise, adjust and re-run.</p>
+    <div class="sens-row">
+      <span class="sub">Less</span>
+      <input type="range" id="sens-slider" min="50" max="150" value="100">
+      <span class="sub">More</span>
+      <span class="val" id="sens-val">1.00</span>
+    </div>
+    <button class="btn sm" onclick="retrack()">Re-track</button>
+  </div>
+</div>
+
+<!-- ===== RESULTS ===== -->
+<div class="screen" id="s-results">
+  <h2>Results</h2>
+
+  <div class="card">
+    <h3 style="margin-top:0">Velocity Profile</h3>
+    <p class="sub">Ball position and velocity vs time. The flat region is the terminal velocity.</p>
+    <canvas id="vel-chart" width="600" height="360"></canvas>
+  </div>
+
+  <div class="card" id="terminal-card">
+    <h3 style="margin-top:0">Terminal Velocity</h3>
+    <div class="result-grid">
+      <div class="result-box">
+        <p class="result-label">V<sub>t</sub></p>
+        <p class="result-val" id="r-vt">--</p>
+        <p class="result-label">cm/s</p>
+      </div>
+      <div class="result-box">
+        <p class="result-label">Re</p>
+        <p class="result-val" id="r-re">--</p>
+      </div>
+      <div class="result-box">
+        <p class="result-label">C<sub>D</sub> meas.</p>
+        <p class="result-val" id="r-cd">--</p>
+      </div>
+    </div>
+    <div class="kv"><span class="k">C<sub>D</sub> from correlation</span><span class="v" id="r-cd-calc">--</span></div>
+    <div class="kv"><span class="k">% difference</span><span class="v pct-diff" id="r-pct">--</span></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">C<sub>D</sub> vs Re</h3>
+    <p class="sub">Your measurement (dot) on the standard drag curve.</p>
+    <canvas id="cd-chart" width="600" height="400"></canvas>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Tracked Playback</h3>
+    <div class="canvas-wrap">
+      <canvas id="playback-canvas"></canvas>
+    </div>
+    <input type="range" id="playback-scrub" min="0" max="100" value="0" style="width:100%;accent-color:var(--accent);margin-top:6px;">
+    <label class="overlay-toggle"><input type="checkbox" id="show-trail" checked> Show trail</label>
+  </div>
+
+  <button class="btn ghost" onclick="show('s-track');document.getElementById('sens-card').style.display='block';">&larr; Adjust &amp; Re-track</button>
+  <button class="btn ghost" onclick="show('s-video')">&larr; Try Different Video</button>
+</div>
+</main>
+
+<script>
+const G=9.81;
+let setup={}, vidEl=null, probe=null;
+let calibY1=null, calibY2=null, markerDistCm=31.6;
+let W=480, H=0, fps=24;
+let track=[], trackRaw=[];
+let sensitivity=1.0;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+function fillFluid(){
+  const v=document.getElementById('fluid-sel').value;
+  if(v==='gly'){document.getElementById('f-rho').value=1235;document.getElementById('f-mu').value=1.261;}
+  if(v==='mix'){document.getElementById('f-rho').value=1192;document.getElementById('f-mu').value=0.0055;}
+}
+function fillSphere(){
+  const v=document.getElementById('sphere-sel').value;
+  if(v==='steel'){document.getElementById('s-rho').value=7820;document.getElementById('s-d').value=3.94;}
+  if(v==='light'){document.getElementById('s-rho').value=2830;document.getElementById('s-d').value=3.94;}
+  if(v==='alum'){document.getElementById('s-rho').value=2700;document.getElementById('s-d').value=6.35;}
+}
+function saveSetup(){
+  setup={
+    rhoF:+document.getElementById('f-rho').value,
+    muF:+document.getElementById('f-mu').value,
+    rhoS:+document.getElementById('s-rho').value,
+    dMm:+document.getElementById('s-d').value,
+    slowF:+document.getElementById('slowf').value||4
+  };
+  setup.dM=setup.dMm/1000;
+}
+
+/* ---- VIDEO ---- */
+function onVid(inp){
+  if(!inp.files||!inp.files[0])return;
+  const url=URL.createObjectURL(inp.files[0]);
+  const prev=document.getElementById('preview-player');
+  prev.src=url;
+  prev.onloadedmetadata=function(){
+    document.getElementById('vid-info').textContent=
+      Math.round(prev.videoWidth)+'×'+Math.round(prev.videoHeight)+', '+prev.duration.toFixed(1)+'s';
+    document.getElementById('vid-preview').style.display='block';
+    vidEl=prev;
+  };
+}
+
+/* ---- CALIBRATE ---- */
+function startCalibrate(){
+  calibY1=null; calibY2=null;
+  document.getElementById('line1').style.display='none';
+  document.getElementById('line2').style.display='none';
+  document.getElementById('calib-dist-card').style.display='none';
+  document.getElementById('calib-instruction').innerHTML='Tap the <strong>upper marker line</strong> on the tube.';
+  show('s-calib');
+
+  if(!probe){
+    probe=document.createElement('video');
+    probe.playsInline=true; probe.muted=true; probe.preload='auto';
+    probe.style.cssText='position:fixed;opacity:0.01;pointer-events:none;width:1px;height:1px;';
+    document.body.appendChild(probe);
+  }
+  probe.src=vidEl.src;
+  probe.onloadedmetadata=function(){
+    fps=30;
+    const ratio=probe.videoHeight/probe.videoWidth;
+    H=Math.round(W*ratio);
+    const c=document.getElementById('calib-canvas');
+    c.width=W; c.height=H;
+    seekAndDraw(probe,0.5,c);
+  };
+}
+
+function seekAndDraw(v,t,c){
+  return new Promise(function(res){
+    v.currentTime=Math.min(t,v.duration-0.01);
+    v.onseeked=function(){
+      const ctx=c.getContext('2d');
+      ctx.drawImage(v,0,0,c.width,c.height);
+      res();
+    };
+  });
+}
+
+document.getElementById('calib-canvas').addEventListener('click',function(e){
+  const rect=this.getBoundingClientRect();
+  const scaleY=H/rect.height;
+  const y=Math.round((e.clientY-rect.top)*scaleY);
+  const pct=((e.clientY-rect.top)/rect.height*100).toFixed(1)+'%';
+
+  if(calibY1===null){
+    calibY1=y;
+    const l1=document.getElementById('line1');
+    l1.style.display='block'; l1.style.top=pct;
+    document.getElementById('calib-instruction').innerHTML='Now tap the <strong>lower marker line</strong>.';
+  } else if(calibY2===null){
+    calibY2=y;
+    if(calibY2<calibY1){const tmp=calibY1;calibY1=calibY2;calibY2=tmp;}
+    const l2=document.getElementById('line2');
+    l2.style.display='block'; l2.style.top=pct;
+    document.getElementById('calib-instruction').innerHTML='Both lines set. Enter the real distance and continue.';
+    document.getElementById('calib-dist-card').style.display='block';
+  }
+});
+
+/* ---- TRACKING ---- */
+function startTracking(){
+  markerDistCm=+document.getElementById('marker-dist').value||31.6;
+  show('s-track');
+  document.getElementById('sens-card').style.display='none';
+  runTracking();
+}
+function retrack(){
+  sensitivity=document.getElementById('sens-slider').value/100;
+  document.getElementById('sens-val').textContent=sensitivity.toFixed(2);
+  runTracking();
+}
+
+document.getElementById('sens-slider').addEventListener('input',function(){
+  document.getElementById('sens-val').textContent=(this.value/100).toFixed(2);
+});
+
+async function runTracking(){
+  const bar=document.getElementById('track-bar');
+  const status=document.getElementById('track-status');
+  const c=document.getElementById('track-canvas');
+  c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+
+  const dur=probe.duration;
+  const sampleFps=12;
+  const dt=1/sampleFps;
+  const totalFrames=Math.floor(dur/dt);
+  trackRaw=[];
+
+  const bgCanvas=document.createElement('canvas');
+  bgCanvas.width=W; bgCanvas.height=H;
+  const bgCtx=bgCanvas.getContext('2d');
+
+  status.textContent='Building background model...';
+  bar.style.width='0%';
+
+  const bgSamples=Math.min(20,totalFrames);
+  const bgAccum=new Float32Array(W*H);
+  let bgCount=0;
+  for(let i=0;i<bgSamples;i++){
+    const t=(i/bgSamples)*dur;
+    await seekAndDraw(probe,t,bgCanvas);
+    const d=bgCtx.getImageData(0,0,W,H).data;
+    for(let p=0;p<W*H;p++){
+      bgAccum[p]+=(d[p*4]*0.299+d[p*4+1]*0.587+d[p*4+2]*0.114);
+    }
+    bgCount++;
+  }
+  const bgGray=new Uint8Array(W*H);
+  for(let p=0;p<W*H;p++) bgGray[p]=Math.round(bgAccum[p]/bgCount);
+
+  const roiTop=Math.max(0,calibY1-20);
+  const roiBot=Math.min(H,calibY2+20);
+
+  status.textContent='Tracking ball...';
+
+  for(let fi=0;fi<totalFrames;fi++){
+    const t=fi*dt;
+    await seekAndDraw(probe,t,c);
+    const frame=ctx.getImageData(0,0,W,H);
+    const d=frame.data;
+
+    let bestX=-1, bestY=-1, bestScore=-1;
+    const thresh=30*sensitivity;
+
+    const blobs=[];
+    const visited=new Uint8Array(W*H);
+
+    for(let py=roiTop;py<roiBot;py++){
+      for(let px=0;px<W;px++){
+        const idx=py*W+px;
+        if(visited[idx])continue;
+        const gray=d[idx*4]*0.299+d[idx*4+1]*0.587+d[idx*4+2]*0.114;
+        const diff=gray-bgGray[idx];
+        if(diff>thresh){
+          const blob=floodFill(d,visited,px,py,W,H,bgGray,thresh,roiTop,roiBot);
+          if(blob.area>=2 && blob.area<=200){
+            blobs.push(blob);
+          }
+        }
+      }
+    }
+
+    if(blobs.length>0){
+      blobs.sort(function(a,b){return b.brightness-a.brightness;});
+      let chosen=blobs[0];
+      if(trackRaw.length>0){
+        const last=trackRaw[trackRaw.length-1];
+        const predY=last.y+(trackRaw.length>1?last.y-trackRaw[trackRaw.length-2].y:2);
+        let bestDist=Infinity;
+        for(let bi=0;bi<Math.min(blobs.length,5);bi++){
+          const dist=Math.abs(blobs[bi].cy-predY)+Math.abs(blobs[bi].cx-last.x)*0.5;
+          if(dist<bestDist){bestDist=dist;chosen=blobs[bi];}
+        }
+        if(bestDist>H*0.15) chosen=null;
+      }
+      if(chosen){
+        trackRaw.push({t:t, x:chosen.cx, y:chosen.cy, frame:fi});
+      }
+    }
+
+    if(fi%3===0){
+      ctx.drawImage(probe,0,0,W,H);
+      if(trackRaw.length>0){
+        ctx.fillStyle='#ff4444';
+        const last=trackRaw[trackRaw.length-1];
+        ctx.beginPath();ctx.arc(last.x,last.y,5,0,Math.PI*2);ctx.fill();
+        if(trackRaw.length>1){
+          ctx.strokeStyle='rgba(255,68,68,0.5)';ctx.lineWidth=2;ctx.beginPath();
+          ctx.moveTo(trackRaw[0].x,trackRaw[0].y);
+          for(let ti=1;ti<trackRaw.length;ti++) ctx.lineTo(trackRaw[ti].x,trackRaw[ti].y);
+          ctx.stroke();
+        }
+      }
+      bar.style.width=((fi/totalFrames)*100).toFixed(0)+'%';
+    }
+
+    await new Promise(function(r){requestAnimationFrame(r);});
+  }
+
+  bar.style.width='100%';
+  status.textContent='Found '+trackRaw.length+' positions in '+totalFrames+' frames.';
+  document.getElementById('sens-card').style.display='block';
+
+  if(trackRaw.length<5){
+    status.textContent='Not enough detections ('+trackRaw.length+'). Try adjusting sensitivity.';
+    return;
+  }
+
+  computeResults();
+}
+
+function floodFill(data,visited,sx,sy,w,h,bg,thresh,roiTop,roiBot){
+  const queue=[[sx,sy]];
+  visited[sy*w+sx]=1;
+  let sumX=0,sumY=0,area=0,sumBri=0;
+  while(queue.length>0){
+    const[cx,cy]=queue.pop();
+    const idx=cy*w+cx;
+    const gray=data[idx*4]*0.299+data[idx*4+1]*0.587+data[idx*4+2]*0.114;
+    sumX+=cx; sumY+=cy; area++; sumBri+=gray;
+    const neighbors=[[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]];
+    for(const[nx,ny] of neighbors){
+      if(nx<0||nx>=w||ny<roiTop||ny>=roiBot)continue;
+      const ni=ny*w+nx;
+      if(visited[ni])continue;
+      visited[ni]=1;
+      const ng=data[ni*4]*0.299+data[ni*4+1]*0.587+data[ni*4+2]*0.114;
+      if(ng-bg[ni]>thresh) queue.push([nx,ny]);
+    }
+    if(area>200)break;
+  }
+  return {cx:sumX/area, cy:sumY/area, area:area, brightness:sumBri/area};
+}
+
+/* ---- RESULTS ---- */
+function computeResults(){
+  const pxPerCm=(calibY2-calibY1)/markerDistCm;
+  const slowF=setup.slowF;
+
+  track=trackRaw.map(function(p){
+    const realT=p.t/slowF;
+    const realY=(p.y-calibY1)/pxPerCm;
+    return {t:realT, y_cm:realY, x:p.x, y_px:p.y, frame:p.frame, t_vid:p.t};
+  });
+
+  const vel=[];
+  for(let i=1;i<track.length;i++){
+    const dt_s=track[i].t-track[i-1].t;
+    if(dt_s<=0)continue;
+    const dy_cm=track[i].y_cm-track[i-1].y_cm;
+    const v=dy_cm/dt_s;
+    vel.push({t:0.5*(track[i].t+track[i-1].t), v:v, y_cm:0.5*(track[i].y_cm+track[i-1].y_cm)});
+  }
+
+  const smoothVel=[];
+  const win=3;
+  for(let i=win;i<vel.length-win;i++){
+    let sv=0;
+    for(let j=-win;j<=win;j++) sv+=vel[i+j].v;
+    smoothVel.push({t:vel[i].t, v:sv/(2*win+1), y_cm:vel[i].y_cm});
+  }
+
+  const inRegion=smoothVel.filter(function(p){return p.y_cm>=0 && p.y_cm<=markerDistCm;});
+  let vtCmS=0;
+  if(inRegion.length>=3){
+    const mid=inRegion.slice(Math.floor(inRegion.length*0.3),Math.floor(inRegion.length*0.9));
+    if(mid.length>0){
+      const sorted=mid.map(function(p){return p.v;}).sort(function(a,b){return a-b;});
+      vtCmS=sorted[Math.floor(sorted.length/2)];
+    }
+  }
+  if(vtCmS<=0 && smoothVel.length>0){
+    const sorted=smoothVel.map(function(p){return p.v;}).sort(function(a,b){return a-b;});
+    vtCmS=sorted[Math.floor(sorted.length/2)];
+  }
+
+  const vtMs=vtCmS/100;
+  const d=setup.dM;
+  const Re=setup.rhoF*vtMs*d/setup.muF;
+  const vol=(Math.PI/6)*d*d*d;
+  const area=(Math.PI/4)*d*d;
+  const wSub=(setup.rhoS-setup.rhoF)*vol*G;
+  const cdMeas=wSub/(0.5*setup.rhoF*vtMs*vtMs*area);
+  const cdCalc=24/Re+3/Math.sqrt(Re)+0.34;
+  const pctDiff=Math.abs((cdMeas-cdCalc)/cdCalc)*100;
+
+  document.getElementById('r-vt').textContent=vtCmS.toFixed(2);
+  document.getElementById('r-re').textContent=Re.toFixed(2);
+  document.getElementById('r-cd').textContent=cdMeas.toFixed(2);
+  document.getElementById('r-cd-calc').textContent=cdCalc.toFixed(3);
+  const pc=document.getElementById('r-pct');
+  pc.textContent=pctDiff.toFixed(1)+'%';
+  pc.className='v pct-diff '+(pctDiff<15?'ok':pctDiff<40?'warn':'bad');
+
+  show('s-results');
+  drawVelChart(smoothVel, vtCmS);
+  drawCdChart(Re, cdMeas);
+  setupPlayback();
+}
+
+function drawVelChart(vel, vt){
+  const c=document.getElementById('vel-chart');
+  const dpr=window.devicePixelRatio||1;
+  const cw=600, ch=360;
+  c.width=cw*dpr; c.height=ch*dpr;
+  c.style.width=cw+'px'; c.style.height=ch+'px';
+  const ctx=c.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  const dk=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const bg=dk?'#1b1f26':'#fff';
+  const grid=dk?'#2c323b':'#e5e7eb';
+  const txt=dk?'#9aa4b2':'#5b6472';
+  const accentC=dk?'#4d8dff':'#1857c4';
+  const vtColor=dk?'#4fd08a':'#0f7a4a';
+
+  ctx.fillStyle=bg; ctx.fillRect(0,0,cw,ch);
+  const pad={t:30,r:30,b:50,l:60};
+  const pw=cw-pad.l-pad.r, ph=ch-pad.t-pad.b;
+
+  if(vel.length<2)return;
+  const tMax=vel[vel.length-1].t;
+  const vMax=Math.max.apply(null,vel.map(function(p){return Math.abs(p.v);}))*1.2;
+
+  function xOf(t){return pad.l+t/tMax*pw;}
+  function yOf(v){return pad.t+ph-v/vMax*ph;}
+
+  ctx.strokeStyle=grid;ctx.lineWidth=0.5;
+  for(let i=0;i<=5;i++){
+    const y=pad.t+ph*i/5;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();
+  }
+
+  ctx.strokeStyle=accentC;ctx.lineWidth=2;ctx.beginPath();
+  vel.forEach(function(p,i){
+    const x=xOf(p.t),y=yOf(p.v);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  ctx.strokeStyle=vtColor;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(pad.l,yOf(vt));ctx.lineTo(pad.l+pw,yOf(vt));ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=vtColor;ctx.font='bold 11px system-ui';ctx.textAlign='left';
+  ctx.fillText('Vt = '+vt.toFixed(1)+' cm/s',pad.l+8,yOf(vt)-6);
+
+  ctx.fillStyle=txt;ctx.font='11px system-ui';ctx.textAlign='center';
+  for(let i=0;i<=5;i++){
+    ctx.fillText((tMax*i/5).toFixed(2)+'s',xOf(tMax*i/5),pad.t+ph+18);
+  }
+  ctx.fillText('Time (s)',pad.l+pw/2,ch-8);
+
+  ctx.textAlign='right';
+  for(let i=0;i<=5;i++){
+    ctx.fillText((vMax*i/5).toFixed(1),pad.l-8,yOf(vMax*i/5)+4);
+  }
+  ctx.save();ctx.translate(14,pad.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';ctx.font='12px system-ui';
+  ctx.fillText('Velocity (cm/s)',0,0);ctx.restore();
+}
+
+function drawCdChart(Re,cdMeas){
+  const c=document.getElementById('cd-chart');
+  const dpr=window.devicePixelRatio||1;
+  const cw=600,ch=400;
+  c.width=cw*dpr;c.height=ch*dpr;
+  c.style.width=cw+'px';c.style.height=ch+'px';
+  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+
+  const dk=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const bg=dk?'#1b1f26':'#fff';
+  const grid=dk?'#2c323b':'#e5e7eb';
+  const txt=dk?'#9aa4b2':'#5b6472';
+  const curveC=dk?'#4d8dff':'#1857c4';
+  const dotC='#ff4444';
+
+  ctx.fillStyle=bg;ctx.fillRect(0,0,cw,ch);
+  const pad={t:30,r:30,b:50,l:60};
+  const pw=cw-pad.l-pad.r,ph=ch-pad.t-pad.b;
+  const reMin=0.01,reMax=10000,cdMin=0.1,cdMax=1000;
+  function xOf(r){return pad.l+(Math.log10(r)-Math.log10(reMin))/(Math.log10(reMax)-Math.log10(reMin))*pw;}
+  function yOf(cd){return pad.t+ph-(Math.log10(cd)-Math.log10(cdMin))/(Math.log10(cdMax)-Math.log10(cdMin))*ph;}
+
+  ctx.strokeStyle=grid;ctx.lineWidth=0.5;
+  for(let e=-2;e<=4;e++){const x=xOf(Math.pow(10,e));ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ph);ctx.stroke();}
+  for(let e=-1;e<=3;e++){const y=yOf(Math.pow(10,e));ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();}
+
+  ctx.strokeStyle=curveC;ctx.lineWidth=2.5;ctx.beginPath();
+  let first=true;
+  for(let lr=-2;lr<=3.5;lr+=0.02){
+    const r=Math.pow(10,lr);
+    const cd=24/r+3/Math.sqrt(r)+0.34;
+    if(cd<cdMin||cd>cdMax)continue;
+    first?(ctx.moveTo(xOf(r),yOf(cd)),first=false):ctx.lineTo(xOf(r),yOf(cd));
+  }
+  ctx.stroke();
+
+  if(Re>0 && cdMeas>0 && Re>=reMin && Re<=reMax && cdMeas>=cdMin && cdMeas<=cdMax){
+    ctx.beginPath();ctx.arc(xOf(Re),yOf(cdMeas),8,0,Math.PI*2);
+    ctx.fillStyle=dotC;ctx.fill();
+    ctx.strokeStyle=bg;ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=txt;ctx.font='bold 11px system-ui';ctx.textAlign='left';
+    ctx.fillText('Your measurement',xOf(Re)+12,yOf(cdMeas)+4);
+  }
+
+  ctx.fillStyle=txt;ctx.font='11px system-ui';ctx.textAlign='center';
+  [-2,-1,0,1,2,3,4].forEach(function(e){
+    const lbl=Math.pow(10,e);
+    ctx.fillText(lbl>=1?lbl.toString():'0.'+('0'.repeat(-e-1))+'1',xOf(lbl),pad.t+ph+18);
+  });
+  ctx.fillText('Re',pad.l+pw/2,ch-8);
+
+  ctx.textAlign='right';
+  [-1,0,1,2,3].forEach(function(e){ctx.fillText(Math.pow(10,e),pad.l-8,yOf(Math.pow(10,e))+4);});
+  ctx.save();ctx.translate(14,pad.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';ctx.font='12px system-ui';ctx.fillText('CD',0,0);ctx.restore();
+}
+
+/* ---- PLAYBACK ---- */
+function setupPlayback(){
+  const c=document.getElementById('playback-canvas');
+  c.width=W;c.height=H;
+  const scrub=document.getElementById('playback-scrub');
+  scrub.max=track.length-1;scrub.value=0;
+  drawPlaybackFrame(0);
+  scrub.addEventListener('input',function(){drawPlaybackFrame(+this.value);});
+  document.getElementById('show-trail').addEventListener('change',function(){drawPlaybackFrame(+scrub.value);});
+}
+
+async function drawPlaybackFrame(idx){
+  if(idx>=track.length)return;
+  const c=document.getElementById('playback-canvas');
+  const ctx=c.getContext('2d');
+  await seekAndDraw(probe,track[idx].t_vid,c);
+
+  ctx.strokeStyle='rgba(255,68,68,0.3)';ctx.lineWidth=1;
+  const ly1=(calibY1/H)*c.height, ly2=(calibY2/H)*c.height;
+  ctx.beginPath();ctx.moveTo(0,ly1);ctx.lineTo(c.width,ly1);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,ly2);ctx.lineTo(c.width,ly2);ctx.stroke();
+
+  if(document.getElementById('show-trail').checked && idx>0){
+    ctx.strokeStyle='rgba(255,68,68,0.6)';ctx.lineWidth=2;ctx.beginPath();
+    ctx.moveTo(track[0].x,track[0].y_px);
+    for(let i=1;i<=idx;i++) ctx.lineTo(track[i].x,track[i].y_px);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle='#ff4444';ctx.beginPath();
+  ctx.arc(track[idx].x,track[idx].y_px,6,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+}
+</script>
+</body>
+</html>
