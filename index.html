@@ -221,45 +221,28 @@
     <!-- ===== Lab 3: Hydrostatic Pressure Apparatus ===== -->
     <a class="lab-card" href="lab3/">
       <div class="lab-illust">
-        <svg viewBox="0 0 320 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <!-- Tank body -->
-          <rect x="80" y="42" width="140" height="105" rx="3" stroke="var(--metal)" stroke-width="2" fill="none"/>
-          <!-- Water fill -->
-          <rect x="81" y="72" width="138" height="74" rx="0" fill="var(--water)" opacity="0.2"/>
-          <!-- Water surface line -->
-          <line x1="81" y1="72" x2="219" y2="72" stroke="var(--water-deep)" stroke-width="1.5"/>
-          <!-- Water surface triangle marker -->
-          <polygon points="205,68 210,72 200,72" fill="var(--water-deep)" opacity="0.7"/>
-          <!-- Plane surface (curved quarter-circle wall inside tank) -->
-          <path d="M145 42 Q145 110 219 110" stroke="var(--metal-dark)" stroke-width="2.5" fill="none"/>
-          <!-- Plane surface flat face -->
-          <rect x="143" y="70" width="4" height="72" rx="1" fill="var(--metal)" opacity="0.5"/>
-          <!-- Pivot point (top-left of tank, knife edge) -->
-          <circle cx="80" cy="42" r="5" fill="var(--accent)" stroke="var(--card-bg)" stroke-width="1.5"/>
-          <!-- Weight deck / beam -->
-          <rect x="30" y="36" width="230" height="6" rx="2" fill="var(--beam)" opacity="0.85"/>
-          <!-- Knife edge mark -->
-          <polygon points="145,36 148,30 142,30" fill="var(--metal-dark)"/>
-          <text x="148" y="27" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--muted)">knife edge</text>
-          <!-- Weight deck label -->
-          <text x="55" y="27" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--muted)">weight deck</text>
-          <!-- Dimension line (234 mm) -->
-          <line x1="90" y1="50" x2="90" y2="140" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="3 2"/>
-          <text x="93" y="98" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--muted)">234 mm</text>
-          <!-- Hanging weight -->
-          <line x1="260" y1="42" x2="260" y2="118" stroke="var(--metal-dark)" stroke-width="1.5"/>
-          <rect x="248" y="118" width="24" height="22" rx="3" fill="var(--metal)" stroke="var(--metal-dark)" stroke-width="1.5"/>
-          <text x="260" y="133" text-anchor="middle" font-family="Space Grotesk, system-ui, sans-serif" font-size="11" font-weight="600" fill="var(--fg)">W</text>
-          <!-- Pressure arrows on plane surface -->
-          <line x1="110" y1="80" x2="138" y2="80" stroke="var(--arrow)" stroke-width="1.5" stroke-linecap="round"/>
-          <polygon points="138,77.5 143,80 138,82.5" fill="var(--arrow)"/>
-          <line x1="106" y1="95" x2="138" y2="95" stroke="var(--arrow)" stroke-width="1.8" stroke-linecap="round"/>
-          <polygon points="138,92 143.5,95 138,98" fill="var(--arrow)"/>
-          <line x1="102" y1="110" x2="138" y2="110" stroke="var(--arrow)" stroke-width="2" stroke-linecap="round"/>
-          <polygon points="138,106.5 144,110 138,113.5" fill="var(--arrow)"/>
-          <!-- Plane surface label -->
-          <text x="170" y="102" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="var(--muted)">plane</text>
-          <text x="170" y="111" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="var(--muted)">surface</text>
+        <svg viewBox="15 18 400 214" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="45" y="150" width="300" height="52" fill="#22c3e6" opacity="0.13"/>
+          <line x1="25" y1="46" x2="400" y2="46" stroke="var(--fg)" stroke-width="3.5"/>
+          <rect x="58" y="37" width="34" height="9" fill="none" stroke="var(--fg)" stroke-width="1.8"/>
+          <path d="M182 35 L198 35 L190 45 Z" fill="var(--fg)"/>
+          <text x="203" y="33" fill="var(--muted)" font-size="11.5" font-family="Inter,system-ui,sans-serif">knife edge</text>
+          <text x="66" y="32" fill="var(--muted)" font-size="11.5" font-family="Inter,system-ui,sans-serif">weight deck</text>
+          <line x1="379" y1="46" x2="379" y2="196" stroke="var(--fg)" stroke-width="1.6"/>
+          <path d="M366 196 L392 196 L379 208 Z" fill="none" stroke="var(--fg)" stroke-width="1.8"/>
+          <rect x="366" y="208" width="26" height="17" fill="none" stroke="var(--fg)" stroke-width="1.8"/>
+          <text x="379" y="217" fill="var(--fg)" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Inter,system-ui,sans-serif">W</text>
+          <line x1="45" y1="57" x2="45" y2="202" stroke="var(--fg)" stroke-width="2.6"/>
+          <line x1="345" y1="57" x2="345" y2="202" stroke="var(--fg)" stroke-width="2.6"/>
+          <line x1="45" y1="202" x2="345" y2="202" stroke="var(--fg)" stroke-width="2"/>
+          <line x1="45" y1="57" x2="345" y2="57" stroke="var(--fg)" stroke-width="2" stroke-dasharray="5 4"/>
+          <line x1="45" y1="150" x2="345" y2="150" stroke="#22c3e6" stroke-width="2"/>
+          <path d="M313 141 L325 141 L319 150 Z" fill="#22c3e6"/>
+          <path d="M190 188 A142 142 0 0 0 332 46 L269 46 A79 79 0 0 1 190 125 Z" fill="var(--fg)" fill-opacity="0.10"/>
+          <path d="M190 188 A142 142 0 0 0 332 46" stroke="var(--fg)" stroke-width="3.2"/>
+          <path d="M190 125 A79 79 0 0 0 269 46" stroke="var(--fg)" stroke-width="3.2"/>
+          <line x1="190" y1="125" x2="190" y2="188" stroke="#e0a34a" stroke-width="5"/>
+          <text x="200" y="141" fill="var(--muted)" font-size="11.5" dominant-baseline="central" font-family="Inter,system-ui,sans-serif">plane surface</text>
         </svg>
       </div>
       <div class="lab-info">
@@ -376,7 +359,6 @@
           <!-- Labels -->
           <text x="215" y="45" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="#ef4444">upper</text>
           <text x="215" y="120" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="#22c55e">lower</text>
-          <text x="160" y="155" text-anchor="middle" font-family="Space Grotesk, system-ui, sans-serif" font-size="9" font-weight="600" fill="var(--muted)">F_D = W_sub at terminal velocity</text>
         </svg>
       </div>
       <div class="lab-info">
