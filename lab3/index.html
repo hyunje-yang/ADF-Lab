@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -569,7 +569,7 @@ const INFO = {
   level: {t:'Reading the bubble level', b:
     '<p>The handout calls this balance arm the <b>plate</b>. It is not the same thing as the '
    +'<b>plane surface</b>, which is the flat vertical face under water that you mark later.</p>'
-   +'<p>The round level sits on the arm. When the bubble is inside the small centre circle, the arm '
+   +'<p>The round level sits on the arm. When the bubble is inside the small center circle, the arm '
    +'is horizontal, and that is the moment the two moments balance.</p>'
    +'<p>Pour <b>slowly</b>. Water is hard to take back out. After the bubble reaches the circle, wait '
    +'for the surface to stop moving before you check again.</p>'},
@@ -619,7 +619,7 @@ const INFO = {
    +'starts. <b>Blue</b> on the water surface. The short <b>green</b> and <b>orange</b> bars mark the top and '
    +'the bottom of the plane surface, joined by the green line along its vertical edge.</p>'
    +'<p>You marked the tank top yourself. That fixed the scale, and the app searched for the rest from there.</p>'
-   +'<p><b>Tank floor</b> is reliable, within half a millimetre in testing. <b>Water surface</b> is usually within about 5 mm. '
+   +'<p><b>Tank floor</b> is reliable, within half a millimeter in testing. <b>Water surface</b> is usually within about 5 mm. '
    +'<b>Plane surface</b> is the weak one: its vertical edge gets confused with other lines inside the tank, '
    +'and its bottom end is faint. Check the plane surface before you continue.</p>'
    +'<p>The badge on each row tells you where that value came from.</p>'},
@@ -2197,7 +2197,7 @@ document.getElementById('saveImg').onclick = async ()=>{
           return;
         }catch(e){
           const code = (e && e.code) || '';
-          if (code === 'declined'){ toast('Save cancelled.','warn'); return; }
+          if (code === 'declined'){ toast('Save canceled.','warn'); return; }
           if (code === 'rate_limited'){ toast('Try again in a moment.','warn'); return; }
           if (code === 'too_large'){ toast('Image too large. Press and hold it to save instead.','warn'); }
         }

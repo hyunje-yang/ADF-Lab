@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Lab 8: 떨어지는 공의 속도</title>
+<title>Lab 8: Falling Sphere</title>
 <style>
 :root{
   --bg:#f5f6f8; --card:#ffffff; --ink:#14171c; --sub:#5b6472; --line:#dfe3e9;
@@ -106,6 +106,18 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 .replay{padding:10px;}
 .replay canvas{cursor:pointer;}
 @media (prefers-reduced-motion:reduce){.lz-ball{animation:none;transform:translate(70px,95px);}.lz-eye,.lz-bub{animation:none;}}
+#run-msg{min-height:1.7em;transition:opacity .18s;}
+#run-msg.fade{opacity:0;}
+.scrub{display:flex;align-items:center;gap:6px;margin-top:10px;}
+.ic{flex:none;width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font-size:24px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.ic svg{width:18px;height:18px;fill:currentColor;}
+.ic:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.trk{position:relative;flex:1;min-width:0;height:40px;display:flex;align-items:center;}
+.trk input{width:100%;margin:0;}
+.mk{position:absolute;top:3px;width:4px;height:9px;border-radius:2px;transform:translateX(-50%);pointer-events:none;}
+#mk-top{background:var(--top);} #mk-bot{background:var(--bot);}
+#rp-time{margin:6px 0 0;font-variant-numeric:tabular-nums;}
 #vid{position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none;}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 /* 폰에서 좌우로 흔들리지 않게 */
@@ -121,97 +133,97 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere}
 </head>
 <body>
 <header>
-  <span class="ttl">Lab 8 · 떨어지는 공의 속도</span>
+  <span class="ttl">Lab 8 · Falling Sphere</span>
   <span class="tag">CE 319F</span>
-  <a class="hbtn" href="../">목록</a>
+  <a class="hbtn" href="../">All labs</a>
 </header>
 
 <main>
-<!-- ===== 1. 처음 ===== -->
+<!-- ===== 1. Start ===== -->
 <section class="screen on" id="s-home">
-  <h1>공이 떨어지는 속도를<br>영상으로 재요</h1>
-  <p class="sub">관 속 액체에 공을 떨어뜨리는 장면을 찍어 올리면, 앱이 공을 따라가서 초록 선과 빨간 선 사이를 지나는 속도를 알려 줘요. 초시계로 시간을 잴 필요가 없어요.</p>
+  <h1>Measure how fast a ball sinks, right from a video</h1>
+  <p class="sub">Film a ball dropping through the liquid in a tube. The app follows the ball and tells you how fast it moves between the green and red lines. No stopwatch needed.</p>
   <div class="card">
     <ol class="steps">
-      <li><span class="n">1</span><div><b>슬로모로 찍기</b><br><span class="sub">관 전체와 두 선이 보이게, 폰을 고정해서 찍어요.</span></div></li>
-      <li><span class="n">2</span><div><b>두 선 표시하기</b><br><span class="sub">화면에서 초록 선과 빨간 선을 한 번씩 눌러요.</span></div></li>
-      <li><span class="n">3</span><div><b>결과 보기</b><br><span class="sub">속도, 레이놀즈 수, 항력계수가 자동으로 나와요.</span></div></li>
+      <li><span class="n">1</span><div><b>Film in slow motion</b><br><span class="sub">Keep the whole tube and both lines in view, and keep the phone still.</span></div></li>
+      <li><span class="n">2</span><div><b>Mark the two lines</b><br><span class="sub">Tap the green line, then the red line.</span></div></li>
+      <li><span class="n">3</span><div><b>See the results</b><br><span class="sub">Speed, Reynolds number, and drag coefficient appear automatically.</span></div></li>
     </ol>
   </div>
-  <button class="btn" id="go-demo">데모 영상으로 먼저 해 보기</button>
-  <button class="btn ghost" id="go-own">내 영상으로 하기</button>
+  <button class="btn" id="go-demo">Try a demo video first</button>
+  <button class="btn ghost" id="go-own">Use my own video</button>
 </section>
 
-<!-- ===== 2. 데모 고르기 ===== -->
+<!-- ===== 2. Demo ===== -->
 <section class="screen" id="s-demo">
-  <h2>어떤 데모를 볼까요?</h2>
-  <p class="sub">실험실에서 아이폰 슬로모로 찍은 실제 영상이에요.</p>
+  <h2>Pick a demo</h2>
+  <p class="sub">Real iPhone slow-motion videos filmed in the lab.</p>
   <div class="demo">
     <button class="opt" data-demo="gly">
-      <img src="demo/gly_thumb.jpg" alt="글리세린 관 사진">
-      <div class="cap"><b>글리세린 관</b><span>끈적해서 공이 아주 천천히 떨어져요.</span></div>
+      <img src="demo/gly_thumb.jpg" alt="Glycerin tube">
+      <div class="cap"><b>Glycerin tube</b><span>Very viscous, so the ball sinks very slowly.</span></div>
     </button>
     <button class="opt" data-demo="mix">
-      <img src="demo/mix_thumb.jpg" alt="글리세린과 물 관 사진">
-      <div class="cap"><b>글리세린+물 관</b><span>덜 끈적해서 공이 빨리 떨어져요.</span></div>
+      <img src="demo/mix_thumb.jpg" alt="Glycerin and water tube">
+      <div class="cap"><b>Glycerin + water tube</b><span>Less viscous, so the ball sinks faster.</span></div>
     </button>
   </div>
-  <button class="btn ghost" data-go="s-home">← 처음으로</button>
+  <button class="btn ghost" data-go="s-home">← Back to start</button>
 </section>
 
-<!-- ===== 3. 내 영상 ===== -->
+<!-- ===== 3. Own video ===== -->
 <section class="screen" id="s-own">
-  <h2>내 영상으로 하기</h2>
+  <h2>Use my own video</h2>
   <div class="card">
-    <h3>이렇게 찍어 주세요</h3>
+    <h3>How to film</h3>
     <ul class="tips">
-      <li>폰을 <b>세로</b>로 두고, 관 전체와 <b>초록 선·빨간 선</b>이 화면에 다 보이게 해요.</li>
-      <li>폰을 손에 들지 말고 <b>거치대나 벽에 기대 고정</b>해요. 흔들리면 속도가 틀려져요.</li>
-      <li>카메라 앱에서 <b>슬로모</b>를 고르고, 공을 넣기 직전에 시작해 공이 바닥에 닿으면 멈춰요.</li>
+      <li>Hold the phone <b>upright</b> so the whole tube and the <b>green and red lines</b> are in the frame.</li>
+      <li>Don't hold the phone in your hand. <b>Use a stand or lean it against something.</b> Any shaking makes the speed wrong.</li>
+      <li>Choose <b>Slo-mo</b> in the Camera app. Start just before you drop the ball, and stop when it reaches the bottom.</li>
     </ul>
   </div>
   <div class="card">
-    <h3>어느 관에 떨어뜨렸나요?</h3>
+    <h3>Which tube did you use?</h3>
     <div class="opts" id="opt-fluid">
-      <button class="opt on" data-v="gly"><b>글리세린</b><span>라벨 GLY 1.257</span></button>
-      <button class="opt" data-v="mix"><b>글리세린+물</b><span>라벨 GLY AND WATER 1.1306</span></button>
+      <button class="opt on" data-v="gly"><b>Glycerin</b><span>Label GLY 1.257</span></button>
+      <button class="opt" data-v="mix"><b>Glycerin + water</b><span>Label GLY AND WATER 1.1306</span></button>
     </div>
-    <h3 style="margin-top:14px">어떻게 찍었나요?</h3>
+    <h3 style="margin-top:14px">How did you film it?</h3>
     <div class="opts" id="opt-mode">
-      <button class="opt on" data-v="slomo"><b>아이폰 슬로모</b><span>실험실 기본 방법</span></button>
-      <button class="opt" data-v="normal"><b>보통 속도</b><span>일반 동영상</span></button>
+      <button class="opt on" data-v="slomo"><b>iPhone slo-mo</b><span>Standard lab method</span></button>
+      <button class="opt" data-v="normal"><b>Normal speed</b><span>Regular video</span></button>
     </div>
   </div>
-  <label class="btn" style="cursor:pointer">앨범에서 영상 고르기
+  <label class="btn" style="cursor:pointer">Choose a video
     <input type="file" accept="video/*" id="file-pick" hidden>
   </label>
-  <button class="btn ghost" data-go="s-home">← 처음으로</button>
+  <button class="btn ghost" data-go="s-home">← Back to start</button>
 </section>
 
-<!-- ===== 4. 선 표시 ===== -->
+<!-- ===== 4. Mark the lines ===== -->
 <section class="screen" id="s-lines">
-  <h2 id="ln-title">두 선의 위치를 알려 주세요</h2>
+  <h2 id="ln-title">Show the app where the two lines are</h2>
   <p id="ln-msg" class="sub"></p>
   <canvas id="ln-main" class="canvas"></canvas>
-  <div class="legend"><span><i style="background:var(--top)"></i>위쪽 선 (초록)</span><span><i style="background:var(--bot)"></i>아래쪽 선 (빨강)</span></div>
+  <div class="legend"><span><i style="background:var(--top)"></i>Top line (green)</span><span><i style="background:var(--bot)"></i>Bottom line (red)</span></div>
   <div id="ln-zoom-box" class="card" hidden>
-    <h3 id="ln-zoom-title">확대 화면</h3>
-    <p class="sub">파란 점선이 관 위의 선과 딱 겹치게 맞춰 주세요. 확대 화면을 눌러도 되고, 버튼으로 조금씩 옮겨도 돼요.</p>
+    <h3 id="ln-zoom-title">Zoomed view</h3>
+    <p class="sub">Line up the blue dashed line exactly with the line on the tube. Tap the zoomed view, or nudge it with the buttons.</p>
     <canvas id="ln-zoom" class="canvas zoom"></canvas>
     <div class="row">
-      <button class="btn sm ghost" id="ln-up">▲ 위로</button>
-      <button class="btn sm ghost" id="ln-down">▼ 아래로</button>
+      <button class="btn sm ghost" id="ln-up">▲ Up</button>
+      <button class="btn sm ghost" id="ln-down">▼ Down</button>
     </div>
-    <button class="btn" id="ln-ok">이 위치로 정하기</button>
+    <button class="btn" id="ln-ok">Use this position</button>
   </div>
   <div id="ln-done" hidden>
-    <button class="btn" id="go-track">공 따라가기 시작</button>
-    <button class="btn ghost" id="ln-redo">선 다시 표시하기</button>
+    <button class="btn" id="go-track">Start tracking the ball</button>
+    <button class="btn ghost" id="ln-redo">Mark the lines again</button>
   </div>
-  <button class="btn ghost" id="ln-back">← 뒤로</button>
+  <button class="btn ghost" id="ln-back">← Back</button>
 </section>
 
-<!-- ===== 5. 추적 중 ===== -->
+<!-- ===== 5. Analyzing ===== -->
 <section class="screen" id="s-run">
   <div class="loader">
     <svg viewBox="0 0 140 190" aria-hidden="true">
@@ -230,70 +242,80 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere}
         <circle cx="9" cy="3" r="2.4" fill="#ff8a65" opacity=".55"/>
       </g>
     </svg>
-    <h2>영상을 분석하고 있어요</h2>
-    <p class="sub" id="run-msg">준비 중…</p>
+    <h2>Analyzing your video</h2>
+    <p class="sub" id="run-msg">Getting ready…</p>
     <div class="progress"><div class="bar" id="run-bar"></div></div>
     <p class="pct" id="run-pct">0%</p>
-    <p class="sub">화면을 끄지 말고 잠깐만 기다려 주세요.<br>영상 길이에 따라 30초~1분쯤 걸려요.</p>
+    <p class="sub">Keep the screen on and hang tight.<br>This takes about 30 seconds to 1 minute, depending on the video.</p>
   </div>
 </section>
 
-<!-- ===== 6. 결과 ===== -->
+<!-- ===== 6. Results ===== -->
 <section class="screen" id="s-res">
   <div id="res-err" class="card" hidden></div>
   <div id="res-body">
-    <h2 class="done"><span class="ck">✓</span>분석이 완료되었어요</h2>
+    <h2 class="done"><span class="ck">✓</span>Analysis complete</h2>
     <div class="card replay">
-      <canvas id="rp" class="canvas" aria-label="분석 영상: 노란 원이 공, 화살표와 숫자가 그 순간의 속도"></canvas>
+      <canvas id="rp" class="canvas" aria-label="Analysis video: the yellow circle is the ball, and the arrow and number show its speed at that moment"></canvas>
+      <div class="scrub">
+        <button class="ic" id="rp-play" aria-label="Play or pause"></button>
+        <button class="ic" id="rp-prev" aria-label="Back one frame"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg></button>
+        <div class="trk">
+          <input type="range" id="rp-k" min="0" max="1000" step="1" value="0" aria-label="Video position">
+          <i class="mk" id="mk-top"></i><i class="mk" id="mk-bot"></i>
+        </div>
+        <button class="ic" id="rp-next" aria-label="Forward one frame"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 5.4 10 4l8 8-8 8-1.4-1.4 6.6-6.6z"/></svg></button>
+      </div>
+      <p class="sub" id="rp-time"></p>
       <p class="sub" id="rp-note"></p>
     </div>
     <div class="card">
-      <h3>두 선 사이를 지난 평균 속도</h3>
+      <h3>Average speed between the two lines</h3>
       <div class="big"><span id="r-v">–</span><small>cm/s</small></div>
       <p id="r-sent"></p>
       <span class="pill" id="r-check"></span>
     </div>
 
     <div class="card">
-      <h3>공의 위치</h3>
+      <h3>Ball position</h3>
       <canvas id="ch-pos" class="chart"></canvas>
-      <p class="sub">점들이 곧은 선 위에 놓이면 공이 같은 속도로 떨어진 거예요. 액체 속에서 공이 더 빨라지지도 느려지지도 않는 이 속도를 <b>종단 속도</b>(terminal velocity)라고 해요.</p>
+      <p class="sub">If the dots fall on a straight line, the ball fell at a constant speed. This speed, where the ball neither speeds up nor slows down in the liquid, is called the <b>terminal velocity</b>.</p>
     </div>
 
     <div class="card">
-      <h3>깊이에 따른 속도</h3>
+      <h3>Speed vs. depth</h3>
       <canvas id="ch-spd" class="chart"></canvas>
-      <p class="sub">회색 띠가 두 선 사이예요. 이 구간에서 그래프가 평평하면 공이 종단 속도에 도달한 상태에서 잰 거예요.</p>
+      <p class="sub">The gray band is the region between the two lines. If the curve is flat there, the ball was already at terminal velocity when you measured it.</p>
     </div>
 
     <div class="card">
-      <h3>레이놀즈 수와 항력계수</h3>
-      <p class="sub"><b>레이놀즈 수</b>(Reynolds number, Re)는 공 주변 흐름에서 액체의 끈적임이 얼마나 큰 역할을 하는지 보여 주는 수예요. 작을수록 끈적임이 지배해요.</p>
+      <h3>Reynolds number and drag coefficient</h3>
+      <p class="sub">The <b>Reynolds number</b> (Re) tells you how much the liquid's viscosity (how thick and sticky it is) controls the flow around the ball. The smaller Re is, the more viscosity dominates.</p>
       <div class="calc" id="c-re"></div>
-      <p class="sub"><b>항력계수</b>(drag coefficient, C<sub>D</sub>)는 공이 받는 저항이 얼마나 큰지 나타내는 수예요. 종단 속도에서는 공의 무게에서 부력을 뺀 힘이 저항과 같아서, 잰 속도로 C<sub>D</sub>를 거꾸로 구할 수 있어요.</p>
+      <p class="sub">The <b>drag coefficient</b> (C<sub>D</sub>) tells you how much resistance the ball feels. At terminal velocity, the ball's weight minus the buoyant force equals the drag, so you can work backward from the measured speed to C<sub>D</sub>.</p>
       <div class="calc" id="c-cd"></div>
       <div class="tw"><table>
-        <thead><tr><th></th><th>Re</th><th>C<sub>D</sub> 측정</th><th>C<sub>D</sub> 식</th><th>차이</th></tr></thead>
-        <tbody><tr><td>이번 실험</td><td id="t-re"></td><td id="t-cdm"></td><td id="t-cdc"></td><td id="t-diff"></td></tr></tbody>
+        <thead><tr><th></th><th>Re</th><th>C<sub>D</sub> measured</th><th>C<sub>D</sub> formula</th><th>Difference</th></tr></thead>
+        <tbody><tr><td>This run</td><td id="t-re"></td><td id="t-cdm"></td><td id="t-cdc"></td><td id="t-diff"></td></tr></tbody>
       </table></div>
-      <p class="sub">C<sub>D</sub> 식은 매끈한 공에 대한 매뉴얼의 식이에요: C<sub>D</sub> = 24/Re + 3/√Re + 0.34 (Re &lt; 1000).</p>
+      <p class="sub">The C<sub>D</sub> formula is the lab manual's formula for a smooth sphere: C<sub>D</sub> = 24/Re + 3/√Re + 0.34 (Re &lt; 1000).</p>
       <details>
-        <summary>계산에 쓴 값과 출처</summary>
+        <summary>Values and sources used</summary>
         <ul class="src" id="src-list"></ul>
-        <p class="src">조교님이 값을 바꾸고 싶으면 아래를 고치면 결과가 바로 다시 계산돼요.</p>
+        <p class="src">TAs: change any value below and the results update right away.</p>
         <div class="edit">
-          <div><label for="e-rhof">액체 밀도 (kg/m³)</label><input type="number" id="e-rhof" step="any"></div>
-          <div><label for="e-mu">액체 점성 (Pa·s)</label><input type="number" id="e-mu" step="any"></div>
-          <div><label for="e-d">공 지름 (mm)</label><input type="number" id="e-d" step="any"></div>
-          <div><label for="e-rhos">공 밀도 (kg/m³)</label><input type="number" id="e-rhos" step="any"></div>
-          <div><label for="e-gap">두 선 사이 거리 (cm)</label><input type="number" id="e-gap" step="any"></div>
-          <div><label for="e-slow">슬로모 배율</label><input type="number" id="e-slow" step="any"></div>
+          <div><label for="e-rhof">Liquid density (kg/m³)</label><input type="number" id="e-rhof" step="any"></div>
+          <div><label for="e-mu">Liquid viscosity (Pa·s)</label><input type="number" id="e-mu" step="any"></div>
+          <div><label for="e-d">Ball diameter (mm)</label><input type="number" id="e-d" step="any"></div>
+          <div><label for="e-rhos">Ball density (kg/m³)</label><input type="number" id="e-rhos" step="any"></div>
+          <div><label for="e-gap">Distance between lines (cm)</label><input type="number" id="e-gap" step="any"></div>
+          <div><label for="e-slow">Slo-mo factor</label><input type="number" id="e-slow" step="any"></div>
         </div>
       </details>
     </div>
   </div>
-  <button class="btn" id="res-again">다른 영상으로 다시 하기</button>
-  <button class="btn ghost" data-go="s-home">처음으로</button>
+  <button class="btn" id="res-again">Try another video</button>
+  <button class="btn ghost" data-go="s-home">Back to start</button>
 </section>
 </main>
 
@@ -303,8 +325,8 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere}
 const G = 9.81;
 const SLOW_IPHONE = 3.91;
 const FLUIDS = {
-  gly: { name:'글리세린', label:'GLY 1.257', rho:1254.7, mu:0.834, vRef:4.6 },
-  mix: { name:'글리세린+물', label:'GLY AND WATER 1.1306', rho:1128.6, mu:0.0063, vRef:26 }
+  gly: { name:'glycerin', label:'GLY 1.257', rho:1254.7, mu:0.834, vRef:4.6 },
+  mix: { name:'glycerin + water', label:'GLY AND WATER 1.1306', rho:1128.6, mu:0.0063, vRef:26 }
 };
 const DEMOS = {
   gly: { src:'demo/gly_slomo.mp4', fluid:'gly', yTop:586, yBot:765, xc:317, t0:62 },
@@ -378,10 +400,10 @@ $('file-pick').onchange = async e => {
 /* ---------- 선 표시 ---------- */
 async function openLines(src, t0, preset){
   show('s-lines');
-  $('ln-msg').textContent = '영상을 불러오는 중…';
+  $('ln-msg').textContent = 'Loading the video…';
   $('ln-zoom-box').hidden = true; $('ln-done').hidden = true;
   try { await loadVideo(src); }
-  catch(err){ $('ln-msg').innerHTML = '<span class="err">영상을 열지 못했어요. 다른 영상으로 해 보세요.</span>'; return; }
+  catch(err){ $('ln-msg').innerHTML = '<span class="err">Could not open this video. Try a different one.</span>'; return; }
   await seek(t0 != null ? t0 : S.dur * 0.15);
   const fc = document.createElement('canvas'); fc.width = S.vw; fc.height = S.vh;
   fc.getContext('2d').drawImage(vid, 0, 0, S.vw, S.vh);
@@ -402,8 +424,8 @@ function beginPick(which){
   S.pick = which; S.pend = null;
   $('ln-done').hidden = true; $('ln-zoom-box').hidden = true;
   $('ln-msg').innerHTML = which === 'top'
-    ? '① 관 위의 <b>초록 선(위쪽)</b>을 눌러 주세요. 공을 떨어뜨린 관 위를 누르면 돼요.'
-    : '② 같은 관 위의 <b>빨간 선(아래쪽)</b>을 눌러 주세요.';
+    ? '① Tap the <b>green line (top)</b> on the tube where you dropped the ball.'
+    : '② Now tap the <b>red line (bottom)</b> on the same tube.';
   drawMain();
 }
 function finishLines(isDemo){
@@ -411,8 +433,8 @@ function finishLines(isDemo){
   S.pick = null; S.pend = null;
   $('ln-zoom-box').hidden = true; $('ln-done').hidden = false;
   $('ln-msg').innerHTML = isDemo
-    ? '데모 영상은 두 선의 위치를 미리 맞춰 두었어요. 초록 선과 빨간 선 위에 표시가 있는지 확인하고 시작하세요.'
-    : '두 선이 모두 표시됐어요. 위치가 맞으면 시작하세요.';
+    ? 'For the demo, the two lines are already marked. Check that the marks sit on the green and red lines, then start.'
+    : 'Both lines are marked. If they look right, start.';
   drawMain();
 }
 function drawMain(){
@@ -434,7 +456,7 @@ $('ln-main').addEventListener('click', e => {
   const vx = (e.clientX - r.left) / r.width * S.vw, vy = (e.clientY - r.top) / r.height * S.vh;
   if (S.pick === 'top' || S.xc == null) S.xc = vx;
   S.pend = { y: vy };
-  $('ln-zoom-title').textContent = S.pick === 'top' ? '초록 선(위쪽) 확대' : '빨간 선(아래쪽) 확대';
+  $('ln-zoom-title').textContent = S.pick === 'top' ? 'Zoom: green line (top)' : 'Zoom: red line (bottom)';
   $('ln-zoom-box').hidden = false;
   drawZoom(); drawMain();
   $('ln-zoom-box').scrollIntoView({ behavior:'smooth', block:'center' });
@@ -576,11 +598,6 @@ function drawOverlay(v, st){
   }
   let yy = 8;
   st.hud.forEach(([txt, col]) => { yy = pill(txt, 8, yy, 15, 'rgba(0,0,0,.62)', col) + 6; });
-  if (st.paused){
-    const cx = v.width / 2, cy = v.height / 2;
-    x.fillStyle = 'rgba(0,0,0,.55)'; x.beginPath(); x.arc(cx, cy, 34, 0, 7); x.fill();
-    x.fillStyle = '#fff'; x.beginPath(); x.moveTo(cx - 10, cy - 16); x.lineTo(cx - 10, cy + 16); x.lineTo(cx + 16, cy); x.closePath(); x.fill();
-  }
 }
 
 /* ---------- 후보 잇기: 아래로만 움직이는 가장 밝은 한 줄기 ----------
@@ -648,16 +665,34 @@ async function playPass(rate, onFrame){
   }
 }
 
+/* 분석 중 문구: 지금 하는 단계에 맞는 문장 10개를 2.4초마다 돌려 가며 보여 준다 */
+const LOAD_MSGS = {
+  scan:  ['👀 Watching your video once', '🧪 Learning what the empty tube looks like', '✨ Ignoring glare on the tube wall'],
+  track: ['🔍 Looking for the ball', '🏃 Following the ball frame by frame', '🔗 Connecting the dots into one path',
+          '📏 Skipping the ruler marks (those are not the ball)', '⏱️ Timing the ball between the lines'],
+  end:   ['🧮 Calculating speed and drag', '🎬 Rendering the replay']
+};
+let msgTimer = 0;
+function cycleMsgs(pool, every = 2400){
+  clearInterval(msgTimer);
+  const el = $('run-msg'); let i = 0;
+  const put = () => {
+    el.classList.add('fade');
+    setTimeout(() => { el.textContent = pool[i % pool.length] + '…'; el.classList.remove('fade'); i++; }, 180);
+  };
+  put(); msgTimer = setInterval(put, every);
+}
+
 async function runTrack(){
   show('s-run');
-  const bar = $('run-bar'), msg = $('run-msg'), pct = $('run-pct');
+  const bar = $('run-bar'), pct = $('run-pct');
   const prog = f => { const v = Math.round(100 * Math.max(0, Math.min(1, f))); bar.style.width = v + '%'; pct.textContent = v + '%'; };
   prog(0);
   const D = makeDetector();
   const gap = S.yBot - S.yTop, pxPerCm = gap / S.p.gapCm;
 
   // 1단계: 빠르게 한 번 훑으며 '움직이지 않는 배경'을 익힌다
-  msg.textContent = '영상을 한 번 훑어보고 있어요';
+  cycleMsgs(LOAD_MSGS.scan);
   const frames = [];
   await playPass(Math.max(1, Math.min(8, S.dur / 6)), t => {
     const th = D.topHat(), u = new Uint8Array(D.N);
@@ -677,7 +712,7 @@ async function runTrack(){
   frames.length = 0;
 
   // 2단계: 다시 재생하면서 장면마다 공 후보를 찾아 바로 이어 붙인다
-  msg.textContent = '공을 찾아서 따라가고 있어요';
+  cycleMsgs(LOAD_MSGS.track);
   const vExpPx = FLUIDS[S.fluid].vRef * pxPerCm / S.p.slow;
   const L = makeLinker(D.sc, Math.max(20 * D.sc, 5 * vExpPx), S.yTop, S.yBot, 0.35 * S.p.slow);
   let nFrames = 0;
@@ -686,9 +721,10 @@ async function runTrack(){
     D.candidates(D.topHat(), bg, 10).forEach(c => L.add({ t, x:c.x, y:c.y, r:c.r }));
     prog(0.3 + 0.7 * t / S.dur);
   });
-  msg.textContent = '속도를 계산하고 있어요';
   prog(1);
-  await new Promise(r => setTimeout(r, 400));
+  cycleMsgs(LOAD_MSGS.end, 900);
+  await new Promise(r => setTimeout(r, 1800));
+  clearInterval(msgTimer);
   analyse(L.final(), nFrames, L.C.length);
 }
 
@@ -717,11 +753,11 @@ function analyse(P, nFrames, nC){
   S.path = P;
   if (tTop == null || tBot == null){
     err.hidden = false; $('res-body').hidden = true;
-    err.innerHTML = '<h3 class="err">공을 두 선 사이에서 끝까지 따라가지 못했어요</h3>'
-      + '<p class="sub">찾은 공 위치 ' + P.length + '개 (장면 ' + nFrames + '개 중). 이런 경우가 많아요:</p>'
-      + '<ul class="tips"><li>두 선을 공이 지나간 관이 아닌 다른 관 위에 표시했어요.</li>'
-      + '<li>공이 두 선 사이를 다 지나기 전에 녹화를 멈췄어요.</li>'
-      + '<li>폰이 흔들렸거나, 손·그림자가 관을 가렸어요.</li></ul>';
+    err.innerHTML = '<h3 class="err">The app could not follow the ball all the way between the two lines</h3>'
+      + '<p class="sub">Ball positions found: ' + P.length + ' (out of ' + nFrames + ' frames). Common reasons:</p>'
+      + '<ul class="tips"><li>The lines were marked on a different tube from the one the ball fell through.</li>'
+      + '<li>The recording stopped before the ball passed both lines.</li>'
+      + '<li>The phone moved, or a hand or shadow covered the tube.</li></ul>';
     document.body.dataset.result = JSON.stringify({ ok:false, n:P.length, frames:nFrames, nc:nC,
       path:P.filter((q, i) => i % Math.ceil(P.length / 25 || 1) === 0).map(q => [+q.t.toFixed(2), Math.round(q.x), Math.round(q.y), Math.round(q.r)]) });
     return;
@@ -743,17 +779,17 @@ function recompute(){
   const f2 = (x, n) => Number(x).toFixed(n);
 
   $('r-v').textContent = vCm >= 10 ? f2(vCm, 1) : f2(vCm, 2);
-  $('r-sent').innerHTML = '공이 두 선 사이 <b>' + f2(p.gapCm, 1) + ' cm</b>를 <b>' + f2(dtReal, 2) + '초</b> 동안 지나갔어요.'
-    + (p.slow !== 1 ? '<br><span class="sub">슬로모 영상에서는 ' + f2(S.cross.tBot - S.cross.tTop, 1) + '초였고, 슬로모 배율 ' + f2(p.slow, 2) + '로 나눈 값이에요.</span>' : '');
+  $('r-sent').innerHTML = 'The ball traveled <b>' + f2(p.gapCm, 1) + ' cm</b> between the lines in <b>' + f2(dtReal, 2) + ' s</b>.'
+    + (p.slow !== 1 ? '<br><span class="sub">In the slo-mo video this took ' + f2(S.cross.tBot - S.cross.tTop, 1) + ' s. Dividing by the slo-mo factor ' + f2(p.slow, 2) + ' gives the real time.</span>' : '');
   const ratio = vCm / f.vRef, chk = $('r-check');
-  if (ratio > 0.5 && ratio < 2){ chk.className = 'pill ok'; chk.textContent = f.name + ' 관에서 예상되는 범위예요'; }
-  else if (ratio >= 2){ chk.className = 'pill warn'; chk.textContent = '예상보다 ' + f2(ratio, 1) + '배 빨라요. 보통 속도 영상인데 슬로모를 고르지 않았나요?'; }
-  else { chk.className = 'pill warn'; chk.textContent = '예상보다 ' + f2(1 / ratio, 1) + '배 느려요. 슬로모 영상인데 보통 속도를 고르지 않았나요?'; }
+  if (ratio > 0.5 && ratio < 2){ chk.className = 'pill ok'; chk.textContent = 'In the expected range for the ' + f.name + ' tube'; }
+  else if (ratio >= 2){ chk.className = 'pill warn'; chk.textContent = f2(ratio, 1) + '× faster than expected. Did you pick "iPhone slo-mo" for a normal-speed video?'; }
+  else { chk.className = 'pill warn'; chk.textContent = f2(1 / ratio, 1) + '× slower than expected. Did you pick "Normal speed" for a slo-mo video?'; }
 
   $('c-re').innerHTML = 'Re = ρ · V · D / μ<br>'
     + '= ' + f2(p.rhoF, 1) + ' × ' + f2(V, 4) + ' × ' + f2(d, 5) + ' / ' + p.mu + '<br>'
     + '= <b>' + (Re < 10 ? f2(Re, 3) : f2(Re, 1)) + '</b>';
-  $('c-cd').innerHTML = 'C<sub>D</sub> = 4 · (ρ<sub>공</sub> − ρ) · g · D / (3 · ρ · V²)<br>'
+  $('c-cd').innerHTML = 'C<sub>D</sub> = 4 · (ρ<sub>ball</sub> − ρ) · g · D / (3 · ρ · V²)<br>'
     + '= 4 × (' + f2(p.rhoS, 0) + ' − ' + f2(p.rhoF, 1) + ') × 9.81 × ' + f2(d, 5) + ' / (3 × ' + f2(p.rhoF, 1) + ' × ' + f2(V, 4) + '²)<br>'
     + '= <b>' + (cdM < 10 ? f2(cdM, 3) : f2(cdM, 1)) + '</b>';
   $('t-re').textContent = Re < 10 ? f2(Re, 3) : f2(Re, 1);
@@ -762,10 +798,10 @@ function recompute(){
   $('t-diff').textContent = (diff > 0 ? '+' : '') + f2(diff, 0) + '%';
 
   $('src-list').innerHTML =
-    '<li>액체 (' + f.label + '): 밀도 ' + f2(p.rhoF, 1) + ' kg/m³, 점성 ' + p.mu + ' Pa·s. 관 라벨의 비중 × 물 밀도 998.2, 20 °C로 가정하고 Volk &amp; Kähler (2018) 식으로 계산.</li>'
-    + '<li>공: 지름 ' + p.dMm + ' mm (공 봉투 라벨), 밀도 ' + p.rhoS + ' kg/m³ (순수 알루미늄 값, 합금 종류는 확인 못 함).</li>'
-    + '<li>두 선 사이: ' + p.gapCm + ' cm (실험대 자로 잰 값, 1.04 ft).</li>'
-    + '<li>슬로모 배율: ' + p.slow + (p.slow === 1 ? ' (보통 속도 영상)' : ' (실험실 아이폰 슬로모 영상에서 잰 값: 공의 속도가 슬로모가 끝나는 순간 3.91배 빨라짐)') + '.</li>';
+    '<li>Liquid (' + f.label + '): density ' + f2(p.rhoF, 1) + ' kg/m³, viscosity ' + p.mu + ' Pa·s. Computed from the specific gravity on the tube label × water density 998.2 kg/m³, assuming 20 °C, with the Volk &amp; Kähler (2018) formula.</li>'
+    + '<li>Ball: diameter ' + p.dMm + ' mm (label on the ball bag), density ' + p.rhoS + ' kg/m³ (pure aluminum; the exact alloy is not confirmed).</li>'
+    + '<li>Distance between lines: ' + p.gapCm + ' cm (measured with the bench ruler, 1.04 ft).</li>'
+    + '<li>Slo-mo factor: ' + p.slow + (p.slow === 1 ? ' (normal-speed video)' : ' (measured on a lab iPhone slo-mo video: the ball appears 3.91× faster the moment slo-mo ends)') + '.</li>';
   [['e-rhof','rhoF'],['e-mu','mu'],['e-d','dMm'],['e-rhos','rhoS'],['e-gap','gapCm'],['e-slow','slow']].forEach(([id, k]) => {
     const el = $(id); if (document.activeElement !== el) el.value = p[k];
   });
@@ -814,7 +850,7 @@ function drawCharts(pxPerCm){
   { const { x, w, h } = chartCtx('ch-pos', 0.75), pad = { l:48, r:12, t:10, b:36 };
     const tr = [Math.min(0, pts[0].t), Math.max(...pts.map(q => q.t))];
     const zr = [Math.min(-2, pts[0].z), Math.max(gap + 2, pts[pts.length - 1].z)];
-    const { X, Y } = axes(x, w, h, pad, tr, zr, '시간 (초, 위 선 통과 = 0)', '위 선에서 내려온 거리 (cm)', ticks(tr[0], tr[1], 5), ticks(zr[0], zr[1], 5));
+    const { X, Y } = axes(x, w, h, pad, tr, zr, 'Time (s), top line = 0', 'Depth below top line (cm)', ticks(tr[0], tr[1], 5), ticks(zr[0], zr[1], 5));
     [[0, css('--top')], [gap, css('--bot')]].forEach(([z, col]) => { x.strokeStyle = col; x.lineWidth = 2;
       x.beginPath(); x.moveTo(pad.l, Y(z)); x.lineTo(w - pad.r, Y(z)); x.stroke(); });
     x.fillStyle = css('--accent');
@@ -832,19 +868,19 @@ function drawCharts(pxPerCm){
     const vMean = gap / ((S.cross.tBot - S.cross.tTop) / p.slow);
     const zr = [Math.min(-2, pts[0].z), Math.max(gap + 2, pts[pts.length - 1].z)];
     const vmax = Math.max(vMean * 1.6, ...sp.map(q => q.v).filter(v => v < vMean * 4));
-    const { X, Y } = axes(x, w, h, pad, zr, [vmax, 0], '위 선에서 내려온 거리 (cm)', '속도 (cm/s)', ticks(zr[0], zr[1], 5), ticks(0, vmax, 4));
+    const { X, Y } = axes(x, w, h, pad, zr, [vmax, 0], 'Depth below top line (cm)', 'Speed (cm/s)', ticks(zr[0], zr[1], 5), ticks(0, vmax, 4));
     x.fillStyle = css('--line'); x.globalAlpha = .55; x.fillRect(X(0), pad.t, X(gap) - X(0), h - pad.t - pad.b); x.globalAlpha = 1;
     x.strokeStyle = css('--ok'); x.setLineDash([6, 5]); x.lineWidth = 1.5;
     x.beginPath(); x.moveTo(pad.l, Y(vMean)); x.lineTo(w - pad.r, Y(vMean)); x.stroke(); x.setLineDash([]);
     x.strokeStyle = css('--accent'); x.lineWidth = 2; x.beginPath();
     sp.filter(q => q.v < vmax).forEach((q, i) => i ? x.lineTo(X(q.z), Y(q.v)) : x.moveTo(X(q.z), Y(q.v))); x.stroke();
     x.fillStyle = css('--ok'); x.font = 'bold 12px system-ui,sans-serif'; x.textAlign = 'left';
-    x.fillText('평균 ' + vMean.toFixed(vMean >= 10 ? 1 : 2) + ' cm/s', pad.l + 6, Y(vMean) - 6);
+    x.fillText('Mean ' + vMean.toFixed(vMean >= 10 ? 1 : 2) + ' cm/s', pad.l + 6, Y(vMean) - 6);
   }
 }
 
 /* ---------- 결과 영상: 찾은 공의 경로를 영상 위에 그려서 반복 재생 ---------- */
-const RP = { on:false, raf:0, t0:0, t1:0, rate:1, spd:null };
+const RP = { on:false, raf:0, t0:0, t1:0, rate:1, spd:null, drag:false, icon:null };
 // 각 점에서의 속도 = 앞뒤 0.25초(실제 시간) 안의 점들에 직선을 맞춘 기울기 (cm/s)
 function rpSpeeds(){
   const P = S.path, w = 0.25 * S.p.slow, pxPerCm = (S.yBot - S.yTop) / S.p.gapCm;
@@ -859,7 +895,7 @@ function rpSpeeds(){
 function rpState(t){
   const P = S.path, n = P.length, slow = S.p.slow;
   if (!RP.spd) RP.spd = rpSpeeds();
-  const st = { ball:null, trail:[], v:null, hud:[], paused:vid.paused };
+  const st = { ball:null, trail:[], v:null, hud:[] };
   let k = -1, lo = 0, hi = n - 1;
   while (lo <= hi){ const m = (lo + hi) >> 1; if (P[m].t <= t){ k = m; lo = m + 1; } else hi = m - 1; }
   if (k >= 0){
@@ -875,19 +911,31 @@ function rpState(t){
   const { tTop, tBot } = S.cross, f2 = (x, d) => x.toFixed(d);
   if (t >= tBot){
     const dt = (tBot - tTop) / slow, vm = S.p.gapCm / dt;
-    st.hud.push(['두 선 사이 ' + f2(dt, 2) + '초', '#7ee2a1']);
-    st.hud.push(['평균 ' + f2(vm, vm >= 10 ? 1 : 2) + ' cm/s', '#7ee2a1']);
-  } else if (t >= tTop) st.hud.push(['초록 선 통과 후 ' + f2((t - tTop) / slow, 2) + '초', '#fff']);
+    st.hud.push(['Between lines: ' + f2(dt, 2) + ' s', '#7ee2a1']);
+    st.hud.push(['Mean ' + f2(vm, vm >= 10 ? 1 : 2) + ' cm/s', '#7ee2a1']);
+  } else if (t >= tTop) st.hud.push([f2((t - tTop) / slow, 2) + ' s after green line', '#fff']);
   return st;
 }
+const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+const FRAME = 1 / 30;
+function rpFrac(t){ return (t - RP.t0) / (RP.t1 - RP.t0); }
 function rpTick(){
   if (!RP.on) return;
-  // 구간(공이 보이는 부분)을 벗어나면 구간 시작으로 되돌린다. 끝난 영상에 play()를 부르면 브라우저가 0초로 되감기 때문에 아래쪽도 검사한다.
-  if (!vid.seeking && (vid.currentTime >= RP.t1 || vid.currentTime < RP.t0 - 0.3 || vid.ended)){
-    vid.currentTime = RP.t0;
-    if (!RP.userPaused) vid.play().catch(() => {});
+  const ct = vid.currentTime;
+  // 재생 중 구간 끝에 닿으면 처음으로. 끝난 영상에 play()를 부르면 브라우저가 0초로 되감기 때문에 구간 앞쪽도 검사한다.
+  if (!vid.seeking){
+    if (ct < RP.t0 - 0.3) vid.currentTime = RP.t0;
+    else if (!vid.paused && (ct >= RP.t1 || vid.ended)) vid.currentTime = RP.t0;
   }
-  drawOverlay($('rp'), rpState(vid.currentTime));
+  drawOverlay($('rp'), rpState(ct));
+  if (!RP.drag) $('rp-k').value = Math.round(1000 * Math.max(0, Math.min(1, rpFrac(ct))));
+  const rel = (ct - S.cross.tTop) / S.p.slow;
+  $('rp-time').textContent = 'Real time: ' + (rel < 0 ? Math.abs(rel).toFixed(2) + ' s before the green line'
+    : ct < S.cross.tBot ? rel.toFixed(2) + ' s after the green line'
+    : 'past the red line (' + ((S.cross.tBot - S.cross.tTop) / S.p.slow).toFixed(2) + ' s between the lines)');
+  const playing = !vid.paused;
+  if (RP.icon !== playing){ RP.icon = playing; $('rp-play').innerHTML = playing ? ICON_PAUSE : ICON_PLAY; }
   RP.raf = requestAnimationFrame(rpTick);
 }
 async function startReplay(){
@@ -896,23 +944,42 @@ async function startReplay(){
   RP.t1 = Math.min(S.dur - 0.05, P[P.length - 1].t + 0.3 * slow);
   // 긴 영상(글리세린)은 한 바퀴가 10초쯤 되게 빠르게 돌린다. 화면의 속도 숫자는 언제나 실제 속도다.
   RP.rate = Math.max(1, Math.min(4, (RP.t1 - RP.t0) / 10));
-  $('rp-note').textContent = '노란 원이 앱이 찾은 공, 화살표와 숫자가 그 순간의 실제 속도예요. 화면을 누르면 멈추고, 다시 누르면 재생돼요.'
-    + (RP.rate > 1.2 ? ' (영상이 길어서 ' + RP.rate.toFixed(1) + '배 빠르게 보여 줘요.)' : '');
-  RP.userPaused = false;
+  $('rp-note').textContent = 'The yellow circle is the ball the app found. The arrow and number show its real speed at that moment. Drag the slider to jump to any moment, or step one frame with the arrow buttons.'
+    + (RP.rate > 1.2 ? ' This video is long, so it plays ' + RP.rate.toFixed(1) + '× faster.' : '');
+  $('mk-top').style.left = 'calc(10px + ' + rpFrac(S.cross.tTop).toFixed(4) + ' * (100% - 20px))';
+  $('mk-bot').style.left = 'calc(10px + ' + rpFrac(S.cross.tBot).toFixed(4) + ' * (100% - 20px))';
+  RP.drag = false; RP.icon = null;
   vid.onended = null;
   await seek(RP.t0);
   vid.playbackRate = RP.rate;
   RP.on = true; cancelAnimationFrame(RP.raf); rpTick();
-  vid.play().catch(() => { RP.userPaused = true; });
+  vid.play().catch(() => {});
 }
 function stopReplay(){
   if (!RP.on) return;
   RP.on = false; cancelAnimationFrame(RP.raf); vid.pause(); vid.playbackRate = 1;
 }
-$('rp').onclick = () => {
-  if (vid.paused){ RP.userPaused = false; vid.play().catch(() => {}); }
-  else { RP.userPaused = true; vid.pause(); }
-};
+function rpToggle(){
+  RP.drag = false;
+  if (vid.paused){
+    if (vid.currentTime >= RP.t1 - 0.05) vid.currentTime = RP.t0;
+    vid.play().catch(() => {});
+  } else vid.pause();
+}
+function rpStep(dir){
+  RP.drag = false; vid.pause();
+  vid.currentTime = Math.max(RP.t0, Math.min(RP.t1, vid.currentTime + dir * FRAME));
+}
+$('rp').onclick = rpToggle;
+$('rp-play').onclick = rpToggle;
+$('rp-prev').onclick = () => rpStep(-1);
+$('rp-next').onclick = () => rpStep(1);
+// 막대를 끌면 멈추고 그 시점으로 간다. 손을 떼도 멈춘 채로 두어 그 순간을 자세히 볼 수 있게 한다.
+const rpK = $('rp-k');
+['pointerdown', 'touchstart'].forEach(ev => rpK.addEventListener(ev, () => { RP.drag = true; vid.pause(); }, { passive:true }));
+rpK.addEventListener('input', () => { RP.drag = true; vid.pause(); vid.currentTime = RP.t0 + (+rpK.value / 1000) * (RP.t1 - RP.t0); });
+rpK.addEventListener('change', () => { RP.drag = false; });
+['pointerup', 'touchend', 'pointercancel'].forEach(ev => rpK.addEventListener(ev, () => { RP.drag = false; }, { passive:true }));
 
 if (qs.get('demo') && DEMOS[qs.get('demo')]) startDemo(qs.get('demo'));
 </script>
