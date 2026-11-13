@@ -198,7 +198,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere}
   <p class="sub" id="run-msg">준비 중…</p>
   <div class="progress"><div class="bar" id="run-bar"></div></div>
   <canvas id="run-view" class="canvas"></canvas>
-  <p class="sub">노란 원이 앱이 찾은 공 후보예요. 영상이 끝날 때까지 기다려 주세요.</p>
+  <p class="sub">노란 원이 앱이 찾은 공, 노란 화살표와 숫자가 그 순간의 속도예요. 영상이 끝날 때까지 기다려 주세요.</p>
 </section>
 
 <!-- ===== 6. 결과 ===== -->
@@ -495,84 +495,65 @@ function makeDetector(){
   return { topHat, candidates, box:{ x0, y0, W, H }, sc, N };
 }
 
-function drawRunView(cands, box){
+/* ---------- 실시간 분석 화면: 관 부분을 확대해서 공 · 속도 화살표 · 속도를 그린다 ---------- */
+function liveView(st){
   const v = $('run-view'), x = v.getContext('2d');
-  const sc = Math.min(1, 480 / S.vw);
-  if (v.width !== Math.round(S.vw * sc)){ v.width = Math.round(S.vw * sc); v.height = Math.round(S.vh * sc); }
-  x.drawImage(vid, 0, 0, v.width, v.height);
-  x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 1;
-  x.strokeRect(box.x0 * sc, box.y0 * sc, box.W * sc, box.H * sc);
+  const gap = S.yBot - S.yTop;
+  const sy = Math.max(0, S.yTop - 0.15 * gap), sh = Math.min(S.vh - sy, 1.5 * gap);
+  const sx = Math.max(0, Math.min(S.vw - 0.8 * sh, S.xc - 0.4 * sh)), sw = Math.min(S.vw - sx, 0.8 * sh);
+  const k = 540 / sh;
+  if (v.height !== 540){ v.width = Math.round(sw * k); v.height = 540; }
+  const X = px => (px - sx) * k, Y = py => (py - sy) * k;
+  x.drawImage(vid, sx, sy, sw, sh, 0, 0, v.width, v.height);
   [[S.yTop, css('--top')], [S.yBot, css('--bot')]].forEach(([y, col]) => {
-    x.strokeStyle = col; x.lineWidth = 2;
-    x.beginPath(); x.moveTo(box.x0 * sc, y * sc); x.lineTo((box.x0 + box.W) * sc, y * sc); x.stroke();
+    x.strokeStyle = col; x.lineWidth = 3; x.beginPath(); x.moveTo(0, Y(y)); x.lineTo(v.width, Y(y)); x.stroke();
   });
-  x.strokeStyle = css('--ball'); x.lineWidth = 2;
-  cands.slice(0, 3).forEach(c => { x.beginPath(); x.arc(c.x * sc, c.y * sc, 7, 0, 7); x.stroke(); });
-}
-
-async function runTrack(){
-  show('s-run');
-  const bar = $('run-bar'), msg = $('run-msg');
-  bar.style.width = '0%';
-  const D = makeDetector();
-
-  // 1단계: 영상을 빠르게 한 번 재생하면서 장면마다 '밝은 작은 점' 지도를 모아 둔다
-  msg.textContent = '1/2 · 영상을 훑어보는 중…';
-  const frames = [];
-  const grab = t => {
-    const th = D.topHat(), u = new Uint8Array(D.N);
-    for (let i = 0; i < D.N; i++) u[i] = th[i] > 255 ? 255 : th[i];
-    frames.push({ t, u });
-    if (frames.length % 3 === 1) drawRunView([], D.box);
-    bar.style.width = (80 * t / S.dur).toFixed(0) + '%';
+  const yellow = '#ffd400';
+  const pill = (txt, px, py, size, bgc, fg) => {
+    x.font = '700 ' + size + 'px -apple-system,"Malgun Gothic",system-ui,sans-serif';
+    const w = x.measureText(txt).width + 16, h = size + 12;
+    const bx = Math.max(4, Math.min(v.width - w - 4, px)), by = Math.max(4, Math.min(v.height - h - 4, py));
+    x.fillStyle = bgc; x.beginPath(); x.roundRect ? x.roundRect(bx, by, w, h, 8) : x.rect(bx, by, w, h); x.fill();
+    x.fillStyle = fg; x.textBaseline = 'middle'; x.fillText(txt, bx + 8, by + h / 2 + 1);
+    return by + h;
   };
-  if ('requestVideoFrameCallback' in HTMLVideoElement.prototype){
-    await seek(0);
-    vid.playbackRate = Math.max(1, Math.min(6, S.dur / 20));
-    await new Promise(res => {
-      let done = false;
-      const fin = () => { if (!done){ done = true; vid.pause(); res(); } };
-      const cb = (now, meta) => { if (done) return; grab(meta.mediaTime); if (!vid.ended) vid.requestVideoFrameCallback(cb); };
-      vid.requestVideoFrameCallback(cb);
-      vid.onended = fin;
-      vid.play().catch(fin);
-    });
-    vid.playbackRate = 1;
-  } else {
-    for (let t = 0; t < S.dur; t += 1 / 8){ await seek(t); grab(t); }
+  if (st.ball){
+    const b = st.ball, bx = X(b.x), by = Y(b.y);
+    if (st.trail.length > 1){
+      x.strokeStyle = 'rgba(255,212,0,.55)'; x.lineWidth = 3; x.beginPath();
+      const T = st.trail;
+      T.forEach((q, i) => {
+        let sx2 = 0, n = 0;
+        for (let j = Math.max(0, i - 4); j <= Math.min(T.length - 1, i + 4); j++){ sx2 += T[j].x; n++; }
+        i ? x.lineTo(X(sx2 / n), Y(q.y)) : x.moveTo(X(sx2 / n), Y(q.y));
+      });
+      x.stroke();
+    }
+    x.strokeStyle = yellow; x.lineWidth = 3.5; x.beginPath(); x.arc(bx, by, 15, 0, 7); x.stroke();
+    if (st.v != null){
+      const L = Math.max(0.35, Math.min(2.2, st.v / FLUIDS[S.fluid].vRef)) * 0.16 * gap * k;
+      x.strokeStyle = yellow; x.fillStyle = yellow; x.lineWidth = 4; x.lineCap = 'round';
+      x.beginPath(); x.moveTo(bx, by + 19); x.lineTo(bx, by + 19 + L); x.stroke();
+      x.beginPath(); x.moveTo(bx - 9, by + 11 + L); x.lineTo(bx + 9, by + 11 + L); x.lineTo(bx, by + 27 + L); x.closePath(); x.fill();
+      pill((st.v >= 10 ? st.v.toFixed(1) : st.v.toFixed(2)) + ' cm/s', bx + 24, by - 20, 22, 'rgba(0,0,0,.72)', yellow);
+    }
   }
-
-  // 2단계: 배경 = 25장면의 중앙값 + 2.5 × MAD. 관 벽처럼 늘 깜빡이는 자리는 문턱이 저절로 높아진다.
-  msg.textContent = '2/2 · 공을 찾는 중…';
-  await new Promise(r => setTimeout(r, 30));
-  const NB = Math.min(25, frames.length), tmp = new Float32Array(NB), bg = new Float32Array(D.N);
-  const pick = Array.from({ length:NB }, (_, i) => frames[Math.floor((i + 0.5) / NB * frames.length)].u);
-  for (let p = 0; p < D.N; p++){
-    for (let i = 0; i < NB; i++) tmp[i] = pick[i][p];
-    tmp.sort(); const med = tmp[NB >> 1];
-    for (let i = 0; i < NB; i++) tmp[i] = Math.abs(pick[i][p] - med);
-    tmp.sort(); bg[p] = med + 2.5 * tmp[NB >> 1];
+  let yy = pill(st.ball ? '공 추적 중' : '공을 찾는 중…', 8, 8, 15, 'rgba(0,0,0,.6)', '#fff') + 6;
+  if (st.tTop != null){
+    const el = ((st.tBot != null ? st.tBot : st.t) - st.tTop) / S.p.slow;
+    pill((st.tBot != null ? '두 선 사이 ' : '초록 선 통과 후 ') + el.toFixed(2) + '초', 8, yy, 15, 'rgba(0,0,0,.6)', st.tBot != null ? '#7ee2a1' : '#fff');
   }
-  const C = [], f32 = new Float32Array(D.N);
-  frames.forEach(fr => {
-    for (let i = 0; i < D.N; i++) f32[i] = fr.u[i];
-    D.candidates(f32, bg, 10).forEach(c => C.push({ t:fr.t, x:c.x, y:c.y, r:c.r }));
-  });
-  const nFrames = frames.length;
-  bar.style.width = '100%';
-  analyse(C, D.sc, nFrames);
 }
 
 /* ---------- 후보 잇기: 아래로만 움직이는 가장 밝은 한 줄기 ----------
    한 장면에서 다음 장면으로 갈 때 공은 아래로만 가고(dy ≥ 0), 옆으로는 거의 안 움직인다.
-   이 조건을 만족하는 후보들을 이어서 밝기 합이 가장 큰 줄기를 공의 경로로 고른다. */
-function link(C, sc, vmax, yA, yB){
-  const n = C.length, score = new Float64Array(n), back = new Int32Array(n).fill(-1), start = new Float64Array(n);
-  const GAP = 3;
+   이 조건을 만족하는 후보들을 이어서 밝기 합이 가장 큰 줄기를 공의 경로로 고른다.
+   장면이 들어올 때마다 바로 이어 붙이므로, 분석 화면에서 공을 실시간으로 보여 줄 수 있다. */
+function makeLinker(sc, vmax, yA, yB){
+  const C = [], score = [], back = [], start = [], GAP = 3;
   let j0 = 0;
-  for (let i = 0; i < n; i++){
-    const c = C[i];
-    score[i] = c.r; start[i] = c.y;
+  function add(c){
+    const i = C.length; C.push(c);
     while (C[j0].t < c.t - GAP) j0++;
     let best = 0, bk = -1;
     for (let j = j0; j < i; j++){
@@ -583,29 +564,136 @@ function link(C, sc, vmax, yA, yB){
       const v = score[j] - 12 * Math.max(0, dt - 1 / 24);
       if (v > best){ best = v; bk = j; }
     }
-    if (bk >= 0){ score[i] = c.r + best; back[i] = bk; start[i] = start[bk]; }
+    score.push(bk >= 0 ? c.r + best : c.r); back.push(bk); start.push(bk >= 0 ? start[bk] : c.y);
+    return i;
   }
+  function path(i){ const P = []; while (i >= 0){ P.push(C[i]); i = back[i]; } return P.reverse(); }
   // 공은 위 선 위에서 출발해 아래 선 밑까지 가는 유일한 줄기다. 그런 줄기 중 가장 점수가 큰 것을 고른다.
-  let i = -1;
-  for (let k = 0; k < n; k++) if (C[k].y >= yB && start[k] < yA && (i < 0 || score[k] > score[i])) i = k;
-  if (i < 0){ i = 0; for (let k = 1; k < n; k++) if (score[k] > score[i]) i = k; }
-  const path = [];
-  while (i >= 0){ path.push(C[i]); i = back[i]; }
-  return path.reverse();
+  function final(){
+    const n = C.length; let i = -1;
+    for (let k = 0; k < n; k++) if (C[k].y >= yB && start[k] < yA && (i < 0 || score[k] > score[i])) i = k;
+    if (i < 0 && n){ i = 0; for (let k = 1; k < n; k++) if (score[k] > score[i]) i = k; }
+    return i < 0 ? [] : path(i);
+  }
+  return { C, score, back, start, add, final };
 }
+
+async function playPass(rate, onFrame){
+  if ('requestVideoFrameCallback' in HTMLVideoElement.prototype){
+    await seek(0);
+    vid.playbackRate = rate;
+    await new Promise(res => {
+      let done = false;
+      const fin = () => { if (!done){ done = true; vid.pause(); res(); } };
+      const cb = (now, meta) => { if (done) return; onFrame(meta.mediaTime); if (!vid.ended) vid.requestVideoFrameCallback(cb); };
+      vid.requestVideoFrameCallback(cb);
+      vid.onended = fin;
+      vid.play().catch(fin);
+    });
+    vid.playbackRate = 1;
+  } else {
+    const step = rate > 3 ? 1 / 3 : 1 / 8;
+    for (let t = 0; t < S.dur; t += step){ await seek(t); onFrame(t); }
+  }
+}
+
+async function runTrack(){
+  show('s-run');
+  const bar = $('run-bar'), msg = $('run-msg');
+  bar.style.width = '0%';
+  const D = makeDetector();
+  const gap = S.yBot - S.yTop, pxPerCm = gap / S.p.gapCm;
+
+  // 1단계: 빠르게 한 번 훑으며 '움직이지 않는 배경'을 익힌다
+  msg.textContent = '1/2 · 배경을 익히는 중… (움직이지 않는 반짝임을 지우려고 영상을 한 번 훑어요)';
+  const frames = [];
+  await playPass(Math.max(1, Math.min(8, S.dur / 6)), t => {
+    const th = D.topHat(), u = new Uint8Array(D.N);
+    for (let i = 0; i < D.N; i++) u[i] = th[i] > 255 ? 255 : th[i];
+    frames.push(u);
+    if (frames.length % 2) liveView({ ball:null, trail:[], t });
+    bar.style.width = (30 * t / S.dur).toFixed(0) + '%';
+  });
+  // 배경 = 25장면의 중앙값 + 2.5 × MAD. 관 벽처럼 늘 깜빡이는 자리는 문턱이 저절로 높아진다.
+  const NB = Math.min(25, frames.length), tmp = new Float32Array(NB), bg = new Float32Array(D.N);
+  const pick = Array.from({ length:NB }, (_, i) => frames[Math.floor((i + 0.5) / NB * frames.length)]);
+  for (let p = 0; p < D.N; p++){
+    for (let i = 0; i < NB; i++) tmp[i] = pick[i][p];
+    tmp.sort(); const med = tmp[NB >> 1];
+    for (let i = 0; i < NB; i++) tmp[i] = Math.abs(pick[i][p] - med);
+    tmp.sort(); bg[p] = med + 2.5 * tmp[NB >> 1];
+  }
+  frames.length = 0;
+
+  // 2단계: 다시 재생하면서 장면마다 공을 찾고, 바로 이어 붙여 화면에 그린다
+  msg.textContent = '2/2 · 공을 따라가는 중…';
+  const vExpPx = FLUIDS[S.fluid].vRef * pxPerCm / S.p.slow;
+  const L = makeLinker(D.sc, Math.max(20 * D.sc, 5 * vExpPx), S.yTop, S.yBot);
+  const st = { ball:null, trail:[], v:null, tTop:null, tBot:null, t:0, lastSeen:-1e9 };
+  let nFrames = 0;
+  await playPass(Math.max(1, Math.min(6, S.dur / 20)), t => {
+    nFrames++; st.t = t;
+    const ids = D.candidates(D.topHat(), bg, 10).map(c => L.add({ t, x:c.x, y:c.y, r:c.r }));
+    // 이 장면 후보 중, 이미 아래로 내려온 줄기의 끝이면서 점수가 가장 큰 것 = 지금 공의 위치
+    // 결과 계산과 같은 규칙: 초록 선 위에서 출발한 줄기만 공으로 본다.
+    // 또 공처럼 빠르게 내려가는 것(예상 속도의 30% 이상)만 공으로 본다. 눈금 숫자 같은 것이 천천히 '흘러가는' 착시를 거른다.
+    // 공은 고르게 떨어진다. 눈금자 숫자 사이 틈은 가만히 있다가 툭 건너뛴다. 걸음마다 속도의 들쭉날쭉한 정도(변동계수)로 가른다.
+    const unsteady = i => {
+      const c = L.C[i], w = 0.5 * S.p.slow; let j = i; const pts = [];
+      while (j >= 0 && c.t - L.C[j].t <= w){ pts.push(L.C[j]); j = L.back[j]; }
+      const vs = []; for (let k = 1; k < pts.length; k++){ const dt = pts[k-1].t - pts[k].t; if (dt > 0) vs.push((pts[k-1].y - pts[k].y) / dt); }
+      if (vs.length < 3) return 9;
+      const m = vs.reduce((a, v) => a + v, 0) / vs.length;
+      return m > 0 ? Math.sqrt(vs.reduce((a, v) => a + (v - m) ** 2, 0) / vs.length) / m : 9;
+    };
+    const recentV = i => {
+      const c = L.C[i]; let j = i, q = i;
+      while (j >= 0 && c.t - L.C[j].t <= 0.5 * S.p.slow){ q = j; j = L.back[j]; }
+      const dtR = (c.t - L.C[q].t) / S.p.slow;
+      return dtR > 0.08 ? (c.y - L.C[q].y) / pxPerCm / dtR : 0;
+    };
+    let bi = -1;
+    ids.forEach(i => {
+      if (L.start[i] >= S.yTop || L.C[i].y - L.start[i] < 0.06 * gap || recentV(i) < 0.3 * FLUIDS[S.fluid].vRef || unsteady(i) > 2) return;
+      if (bi < 0 || L.score[i] > L.score[bi]) bi = i;
+    });
+    if (bi >= 0){
+      const c = L.C[bi]; st.ball = c; st.lastSeen = t;
+      const trail = [], win = 0.5 * S.p.slow; let j = bi, jv = bi;
+      while (j >= 0 && c.t - L.C[j].t <= 3 * S.p.slow){ trail.push(L.C[j]); if (c.t - L.C[j].t <= win) jv = j; j = L.back[j]; }
+      st.trail = trail;
+      const q = L.C[jv], dtR = (c.t - q.t) / S.p.slow;
+      if (dtR > 0.08){ const v = (c.y - q.y) / pxPerCm / dtR; st.v = st.v == null ? v : 0.75 * st.v + 0.25 * v; }
+      // 지금까지 이어진 줄기를 거슬러 올라가 선을 지난 순간을 찾는다
+      const crossOnChain = yl => {
+        if (c.y < yl) return null;
+        let a = bi, b = L.back[bi];
+        while (b >= 0 && L.C[b].y >= yl){ a = b; b = L.back[b]; }
+        if (b < 0) return null;
+        const A = L.C[b], B = L.C[a];
+        return A.t + (yl - A.y) / (B.y - A.y) * (B.t - A.t);
+      };
+      st.tTop = crossOnChain(S.yTop);
+      st.tBot = st.tTop != null ? crossOnChain(S.yBot) : null;
+    } else if (t - st.lastSeen > 0.6 * S.p.slow){ st.ball = null; st.v = null; st.trail = []; if (st.tBot == null) st.tTop = null; }
+    liveView(st);
+    bar.style.width = (30 + 70 * t / S.dur).toFixed(0) + '%';
+  });
+  bar.style.width = '100%';
+  await new Promise(r => setTimeout(r, 600));
+  analyse(L.final(), nFrames, L.C.length);
+}
+
 function crossTime(P, yl){
   for (let k = 1; k < P.length; k++)
     if (P[k-1].y < yl && P[k].y >= yl) return P[k-1].t + (yl - P[k-1].y) / (P[k].y - P[k-1].y) * (P[k].t - P[k-1].t);
   return null;
 }
 
-function analyse(C, sc, nFrames){
+function analyse(P, nFrames, nC){
   show('s-res');
   const err = $('res-err');
   err.hidden = true; $('res-body').hidden = false;
-  const pxPerCm = (S.yBot - S.yTop) / S.p.gapCm;
-  const vExpPx = FLUIDS[S.fluid].vRef * pxPerCm / S.p.slow;
-  const P = C.length ? link(C, sc, Math.max(20 * sc, 5 * vExpPx), S.yTop, S.yBot) : [];
   const tTop = crossTime(P, S.yTop), tBot = crossTime(P, S.yBot);
   S.path = P;
   if (tTop == null || tBot == null){
@@ -615,7 +703,7 @@ function analyse(C, sc, nFrames){
       + '<ul class="tips"><li>두 선을 공이 지나간 관이 아닌 다른 관 위에 표시했어요.</li>'
       + '<li>공이 두 선 사이를 다 지나기 전에 녹화를 멈췄어요.</li>'
       + '<li>폰이 흔들렸거나, 손·그림자가 관을 가렸어요.</li></ul>';
-    document.body.dataset.result = JSON.stringify({ ok:false, n:P.length, frames:nFrames, nc:C.length,
+    document.body.dataset.result = JSON.stringify({ ok:false, n:P.length, frames:nFrames, nc:nC,
       path:P.filter((q, i) => i % Math.ceil(P.length / 25 || 1) === 0).map(q => [+q.t.toFixed(2), Math.round(q.x), Math.round(q.y), Math.round(q.r)]) });
     return;
   }
