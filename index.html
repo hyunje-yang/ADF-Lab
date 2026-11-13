@@ -49,6 +49,8 @@ h1{font-size:28px;line-height:1.25;margin:12px 0 6px;letter-spacing:-.01em;}
 .txt p{color:var(--sub);font-size:14.5px;margin:0 0 10px;}
 .go{font-size:14.5px;font-weight:700;color:var(--accent);}
 footer{text-align:center;color:var(--sub);font-size:12.5px;padding:28px 0 8px;}
+footer div+div{margin-top:4px;}
+footer .nw{white-space:nowrap;}
 @media (max-width:560px){
   .lab{grid-template-columns:1fr;}
   .pic{padding:14px 16px 6px;}
@@ -159,7 +161,10 @@ img,svg,video,canvas{max-width:100%;height:auto}
     </a>
 
   </div>
-  <footer>ADF Lab · The University of Texas at Austin</footer>
+  <footer>
+    <div><span class="nw">CE 319F Elementary Mechanics of Fluids ·</span> <span class="nw">The University of Texas at Austin</span></div>
+    <div>© 2026 COMPOUND Flood Lab. All rights reserved.</div>
+  </footer>
 </main>
 </body>
 </html>
