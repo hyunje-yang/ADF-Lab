@@ -1,0 +1,1788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Lab 4: Flow Visualization</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#14171c; --sub:#5b6472; --line:#dfe3e9;
+  --accent:#1857c4; --accent-ink:#ffffff; --ok:#0f7a4a; --warn:#a35b00; --bad:#b4232a;
+  --cyan:#0d8ea8; --mag:#b3239c; --duck:#ffc933;
+  --water:#dcefff; --waterline:#9cc8ee;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#12151a; --card:#1b1f26; --ink:#eef1f5; --sub:#9aa4b2; --line:#2c323b;
+  --accent:#4d8dff; --accent-ink:#07101f; --ok:#4fd08a; --warn:#e0a34a; --bad:#ff7b7b;
+  --cyan:#3fc9e6; --mag:#ee7ad6; --duck:#ffc933;
+  --water:#16324d; --waterline:#2f5d86; }
+}
+:root[data-theme="dark"]{ --bg:#12151a; --card:#1b1f26; --ink:#eef1f5; --sub:#9aa4b2; --line:#2c323b;
+  --accent:#4d8dff; --accent-ink:#07101f; --ok:#4fd08a; --warn:#e0a34a; --bad:#ff7b7b;
+  --cyan:#3fc9e6; --mag:#ee7ad6; --duck:#ffc933;
+  --water:#16324d; --waterline:#2f5d86; }
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+     font-size:16px; line-height:1.6; padding-bottom:env(safe-area-inset-bottom);}
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);
+       padding:10px 14px;display:flex;align-items:center;gap:10px;
+       padding-top:calc(10px + env(safe-area-inset-top));}
+header .ttl{font-weight:700;font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+header .tag{font-size:12px;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 9px;font-weight:700;}
+header .hbtn{flex:none;border:1px solid var(--line);background:var(--card);color:var(--accent);
+       font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px;cursor:pointer;line-height:1;}
+main{padding:14px 14px 90px;max-width:640px;margin:0 auto;}
+.screen{display:none;} .screen.on{display:block;}
+h2{font-size:19px;margin:2px 0 10px;line-height:1.4;}
+h3{font-size:15px;margin:18px 0 6px;color:var(--sub);}
+p{margin:8px 0;}
+.sub{color:var(--sub);font-size:14px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0;}
+.card.tight{padding:10px 12px;}
+button{font:inherit;}
+.btn:focus-visible,.chip:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;}}
+.btn{display:block;width:100%;padding:15px 16px;border-radius:12px;border:1px solid var(--accent);
+     background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px;margin-top:10px;cursor:pointer;text-align:center;}
+.btn.ghost{background:transparent;color:var(--accent);}
+.btn.sm{padding:11px 12px;font-size:15px;}
+.btn:disabled{opacity:.4;}
+.row{display:flex;gap:10px;} .row>*{flex:1;}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--sub);}
+img.guide{width:100%;border-radius:10px;display:block;border:1px solid var(--line);}
+.figcap{font-size:12.5px;color:var(--sub);margin:5px 0 10px;}
+ul{padding-left:20px;margin:8px 0;} li{margin:5px 0;}
+ol{padding-left:22px;margin:8px 0;} ol li{margin:7px 0;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right;}
+th:first-child,td:first-child{text-align:left;}
+thead th{color:var(--sub);font-weight:600;font-size:12.5px;}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed var(--line);}
+.kv:last-child{border-bottom:0;}
+.kv .k{color:var(--sub);font-size:14px;} .kv .v{font-weight:700;font-variant-numeric:tabular-nums;text-align:right;}
+.note{font-size:13.5px;color:var(--sub);border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:10px 0;}
+.warnbox{border-left-color:var(--warn);color:var(--warn);}
+.okbox{border-left-color:var(--ok);color:var(--ok);}
+.badbox{border-left-color:var(--bad);color:var(--bad);}
+.chk{display:flex;gap:12px;align-items:center;padding:9px 0;font-size:15px;cursor:pointer;border-bottom:1px dashed var(--line);}
+.chk:last-child{border-bottom:0;}
+.chk input{width:24px;height:24px;flex:none;accent-color:var(--accent);}
+.btn.off{opacity:.4;pointer-events:none;}
+input.lenin{width:96px;padding:6px 8px;font-size:17px;display:inline-block;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:14px;font-weight:700;cursor:pointer;}
+.chips button.offc{color:var(--sub);text-decoration:line-through;opacity:.7;}
+.chips button.sel{outline:2px solid var(--accent);}
+input[type=number],input[type=text]{width:100%;padding:13px;border-radius:10px;border:1px solid var(--line);
+     background:var(--bg);color:var(--ink);font-size:18px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;}
+.stage{position:relative;width:100%;height:58vh;min-height:320px;background:#0a0c10;border-radius:12px;overflow:hidden;border:1px solid var(--line);}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none;}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+.hud{position:absolute;left:8px;top:8px;background:rgba(15,18,24,.72);color:#fff;font-size:12px;
+     padding:5px 9px;border-radius:8px;font-variant-numeric:tabular-nums;z-index:3;}
+.stepdots{display:flex;gap:5px;margin:6px 0 12px;}
+.dot{height:4px;flex:1;border-radius:2px;background:var(--line);}
+.dot.on{background:var(--accent);}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12.5px;color:var(--sub);margin-top:8px;}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+#toast{position:fixed;left:12px;right:12px;top:12px;z-index:100;padding:13px 15px;border-radius:12px;
+  background:var(--ink);color:var(--card);font-size:14.5px;font-weight:600;line-height:1.5;
+  box-shadow:0 8px 28px rgba(0,0,0,.32);opacity:0;transform:translateY(-14px);pointer-events:none;
+  transition:opacity .18s,transform .18s;}
+#toast.show{opacity:1;transform:none;}
+#toast.warn{background:var(--warn);color:#fff;}
+#toast.bad{background:var(--bad);color:#fff;}
+input[type=range]{width:100%;height:46px;-webkit-appearance:none;appearance:none;background:transparent;margin:4px 0 0;}
+input[type=range]::-webkit-slider-runnable-track{height:9px;border-radius:5px;background:var(--line);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:36px;height:36px;border-radius:50%;
+  background:var(--mag);border:3px solid #fff;margin-top:-13.5px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+input[type=range]::-moz-range-track{height:9px;border-radius:5px;background:var(--line);}
+input[type=range]::-moz-range-thumb{width:36px;height:36px;border-radius:50%;background:var(--mag);border:3px solid #fff;}
+.apptitle{font-size:26px;font-weight:800;margin:4px 0 2px;line-height:1.2;}
+.appsub{font-size:13px;color:var(--sub);margin:0 0 18px;}
+.drow{padding:6px 0;border-bottom:1px dashed var(--line);}
+.drow:last-child{border-bottom:0;}
+.drow b{display:block;font-size:14.5px;}
+.drow span{display:block;font-size:13.5px;color:var(--sub);line-height:1.45;}
+.foot{font-size:12px;color:var(--sub);margin-top:24px;border-top:1px solid var(--line);padding-top:12px;}
+code{font-size:13px;background:var(--bg);padding:1px 5px;border-radius:5px;}
+.ibtn{display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:25px;height:25px;border-radius:50%;border:1.6px solid var(--accent);
+  background:transparent;color:var(--accent);font:700 14px Georgia,serif;
+  cursor:pointer;padding:0;line-height:1;vertical-align:middle;margin-left:7px;}
+.ibtn:active{background:var(--accent);color:var(--accent-ink);}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;
+  align-items:flex-end;justify-content:center;}
+.modal.on{display:flex;}
+.modal-box{background:var(--card);border-radius:18px 18px 0 0;width:100%;max-width:640px;
+  max-height:88vh;overflow-y:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line);}
+.modal-box h3{margin:0 0 10px;color:var(--ink);font-size:17px;}
+@media (min-width:700px){ .modal{align-items:center;} .modal-box{border-radius:18px;} }
+.ccard{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:12px;margin:10px 0;cursor:pointer;width:100%;text-align:left;color:var(--ink);}
+.ccard:active{background:var(--bg);}
+.ccard .ic{flex:none;width:76px;height:58px;border-radius:9px;background:var(--bg);border:1px solid var(--line);}
+.ccard .nm{font-weight:700;font-size:16.5px;}
+.ccard .ds{font-size:13px;color:var(--sub);line-height:1.45;}
+.ccard .st{flex:none;font-size:12px;font-weight:700;color:var(--sub);}
+.ccard.done{border-color:var(--ok);}
+.ccard.done .st{color:var(--ok);}
+.cgrid{display:grid;grid-template-columns:30px repeat(3,minmax(0,1fr));gap:6px;margin:10px 0;}
+.cgrid .ch{font-size:11.5px;font-weight:700;text-align:center;line-height:1.25;align-self:end;padding-bottom:2px;}
+.cgrid .ch small{display:block;font-weight:600;color:var(--sub);font-size:10.5px;}
+.cgrid .rh{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11.5px;font-weight:700;text-align:center;
+  line-height:1.2;display:flex;align-items:center;justify-content:center;border-radius:10px;padding:4px 0;background:var(--card);border:1px solid var(--line);}
+.cgrid .rh small{font-weight:600;color:var(--sub);font-size:10.5px;}
+.cell{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:5px 5px 6px;
+  cursor:pointer;color:var(--ink);text-align:center;min-width:0;}
+.cell:active{background:var(--bg);}
+.cell:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.cell .nm{display:block;font-size:12.5px;font-weight:700;margin-top:3px;}
+.cell.done{border-color:var(--ok);}
+.cell .ok{position:absolute;right:4px;top:4px;width:18px;height:18px;border-radius:50%;background:var(--ok);
+  color:#fff;font-size:12px;line-height:18px;font-weight:800;}
+.defq{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:14.5px;margin:4px 0 8px;
+  padding-left:10px;border-left:3px solid var(--accent);}
+.defq .src{display:block;font-family:inherit;font-style:normal;font-size:11px;color:var(--sub);margin-top:2px;}
+.bigfig{padding:6px!important;}
+.kit{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px;}
+.kit span{font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--bg);}
+.prog{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:10px 0 4px;}
+.prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .12s linear;}
+</style>
+</head>
+<body>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<noscript><div style="position:fixed;left:0;right:0;top:0;z-index:999;background:#b4232a;color:#fff;padding:14px;font:600 15px/1.5 system-ui">JavaScript is OFF in this viewer, so no button can work. (noscript)</div></noscript>
+<div id="bootErr" style="display:none;position:fixed;left:0;right:0;top:0;z-index:999;background:#b4232a;color:#fff;padding:14px;font:600 13px/1.5 system-ui;white-space:pre-wrap;word-break:break-all"></div>
+<script>
+/* 진단용: 앱 코드가 멈추면 그 이유를 화면 맨 위에 빨간 상자로 띄운다.
+   (폰에서 파일로 열었을 때 버튼이 안 눌리는 원인을 찾으려고 넣었다) */
+window.__bootMsgs=[];
+function __bootShow(m){ window.__bootMsgs.push(m); var b=document.getElementById('bootErr');
+  if(b){ b.style.display='block'; b.textContent='APP ERROR (please screenshot this):\n'+window.__bootMsgs.join('\n'); } }
+window.onerror=function(msg,src,line,col){ __bootShow(msg+'  @ line '+line+':'+col); };
+window.addEventListener('load',function(){ setTimeout(function(){
+  if(!window.__appReady) __bootShow('Main script did not finish loading (size '+document.documentElement.outerHTML.length+' chars). UA: '+navigator.userAgent);
+},1500); });
+</script>
+
+<div class="modal" id="infoModal">
+  <div class="modal-box">
+    <h3 id="infoTtl"></h3>
+    <div id="infoBody"></div>
+    <button class="btn" id="infoClose">Got it</button>
+  </div>
+</div>
+
+<header>
+  <button class="hbtn" id="navBack" style="display:none" aria-label="Back">&lsaquo; Back</button>
+  <span class="tag" id="hdrTag">Lab 4</span>
+  <span class="ttl" id="hdrTtl">Flow Visualization</span>
+</header>
+
+<main>
+
+<!-- ============ 0. 표지 ============ -->
+<section class="screen on" id="s-intro">
+  <h1 class="apptitle">Lab 4: Flow Visualization</h1>
+  <p class="appsub">CE319F Elementary Fluid Mechanics</p>
+
+  <h2>Flow Patterns: three ways to see a flow<button class="ibtn" data-info="why3">i</button></h2>
+  <p class="sub">Streamlines, pathlines, and streaklines are <b>three different ways</b> to draw the same flow.
+     In this lab, you draw all three lines yourself in two situations:
+     <b>steady flow</b> and <b>unsteady flow</b>.</p>
+
+  <h3>Three lines</h3>
+  <div class="card tight">
+    <div class="drow"><b>Streamline</b><span>At one instant, a line that follows the direction the water is moving</span></div>
+    <div class="drow"><b>Pathline</b><span>The actual path one particle travels</span></div>
+    <div class="drow"><b>Streakline</b><span>A line joining all particles that passed through one point</span></div>
+  </div>
+
+  <h3>Two situations</h3>
+  <div class="card tight">
+    <div class="drow"><b>Steady flow</b><span>No obstruction: the flow stays the same over time</span></div>
+    <div class="drow"><b>Unsteady flow</b><span>With obstruction: the flow keeps changing behind the obstruction</span></div>
+  </div>
+
+  <div class="note">This app analyzes the video you record and helps you draw the water flow.</div>
+
+  <button class="btn" id="btnStart">Start</button>
+  <button class="btn ghost sm" id="btnDemo">Try a demo video (no recording needed)</button>
+  <p class="foot">Lab 4 pilot &middot; v1.024</p>
+</section>
+
+<!-- ============ 2. 개념 고르기 ============ -->
+<section class="screen" id="s-pick">
+  <div class="stepdots"><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+  <h2>Which one are you recording now?</h2>
+  <div class="cgrid" id="conceptList"></div>
+  <div class="note okbox" id="allDoneNote" style="display:none">You have recorded all six cells.</div>
+</section>
+
+<!-- ============ 3. 인스트럭션 ============ -->
+<section class="screen" id="s-brief">
+  <div class="stepdots"><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i></div>
+  <h2 id="brTtl"></h2>
+  <h3>What is it?</h3>
+  <div class="card tight">
+    <p class="defq"><span id="brDef"></span><span class="src">Definition from the lab manual, p.1</span></p>
+    <p id="brWhat" style="margin-bottom:2px"></p>
+  </div>
+  <h3>How is it drawn?</h3>
+  <div id="brFig" class="card tight bigfig"></div>
+  <p id="brHow" class="sub"></p>
+  <h3>What you need</h3>
+  <div class="kit" id="brKit"></div>
+  <h3>How to record</h3>
+  <ol id="brSteps"></ol>
+  <button class="btn" data-go="shoot">I am ready to record</button>
+  <button class="btn ghost sm" data-go="pick">Pick a different one</button>
+</section>
+
+<!-- ============ 4. 촬영 ============ -->
+<section class="screen" id="s-shoot">
+  <div class="stepdots"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></div>
+  <h2 id="shTtl">Record</h2>
+  <div class="card tight">
+    <div class="kv"><span class="k">Length</span><span class="v" id="shLen">Until all ducks leave the frame</span></div>
+    <div class="kv"><span class="k">Phone</span><span class="v">On a tripod, pointing straight down</span></div>
+    <div class="kv"><span class="k">Frame</span><span class="v">Both walls fully visible</span></div>
+  </div>
+  <h3 id="shChkTtl">Before you record, check both</h3>
+  <div class="card tight">
+    <label class="chk"><input type="checkbox" id="shMount"><span>The phone is on the tripod, <b>pointing straight down</b> at the water, and does not move</span></label>
+    <label class="chk"><input type="checkbox" id="shFrame"><span>Both walls are on screen, and no ducks are in the water yet</span></label>
+    <label class="chk" id="shSlowRow" style="display:none"><input type="checkbox" id="shSlowChk"><span>The phone's <b>Camera app</b> is in <b>Slo-mo at 240 fps</b>
+      (iPhone: Settings &rarr; Camera &rarr; Record Slo-mo &rarr; 240 fps). I will <b>start recording, wait 3 seconds, then put the ducks in</b>,
+      and keep recording 3 seconds after the last duck leaves.</span></label>
+  </div>
+  <p class="sub" id="shHint">Start recording first, then walk upstream behind the phone and put the ducks in.</p>
+  <label class="btn off" id="lbCam" for="fileCam">Record video</label>
+  <input id="fileCam" type="file" accept="video/*" capture="environment" hidden>
+  <label class="btn ghost off" id="lbLib" for="fileLib">Choose a video you already recorded</label>
+  <input id="fileLib" type="file" accept="video/*" hidden>
+  <button class="btn ghost sm" id="btnDemo2">Use the demo video</button>
+  <button class="btn ghost sm" data-go="brief">Back to instructions</button>
+</section>
+
+<!-- ============ 4b. 슬로모 확인 (v1.021, v1.024 부터 장애물 있음 세 칸) ============ -->
+<section class="screen" id="s-slow">
+  <h2>How your phone saved this video</h2>
+  <p class="sub">Slow motion stretches time. The app has to know by how much, or every speed comes out too slow.</p>
+  <div class="card tight" id="slFile">Reading the file&hellip;</div>
+  <div class="note" id="slVerdict"></div>
+  <h3>Time stretch</h3>
+  <div class="card tight">
+    <label class="sub" for="slF">The slow part is stretched by (&times;)</label>
+    <input type="number" id="slF" min="1" max="64" step="0.01" inputmode="decimal">
+    <div class="kv"><span class="k">1 s of video in the slow part</span><span class="v" id="slReal">--</span></div>
+    <p class="sub" id="slFwhy"></p>
+  </div>
+  <h3>Check it with a stopwatch</h3>
+  <p class="sub">If a stopwatch is in the video: move to a frame, read the stopwatch, and type it in.
+    Do this at two moments far apart, both inside the slow part. The app then measures the stretch.</p>
+  <video id="slVid" muted playsinline preload="auto" style="width:100%;max-height:50vh;background:#000;border-radius:10px;display:block"></video>
+  <input type="range" id="slSeek" min="0" max="1000" value="0" aria-label="Move through the video">
+  <div class="chips"><button id="slPrev">&#9664; 1 frame</button><button id="slNext">1 frame &#9654;</button>
+    <span class="sub" id="slT" style="align-self:center;margin-left:6px">video 0.000 s</span></div>
+  <div class="card tight">
+    <div class="chips" style="margin-top:0"><button id="slMarkA">Set A at this frame</button><span class="sub" id="slTA" style="align-self:center">video --</span></div>
+    <input type="text" id="slSwA" placeholder="Stopwatch at A, e.g. 3.25 or 0:03.25" inputmode="decimal">
+    <div class="chips"><button id="slMarkB">Set B at this frame</button><span class="sub" id="slTB" style="align-self:center">video --</span></div>
+    <input type="text" id="slSwB" placeholder="Stopwatch at B" inputmode="decimal">
+    <p class="sub" id="slCal" style="margin-bottom:0"></p>
+  </div>
+  <button class="btn" id="slGo">Use this stretch and continue</button>
+  <button class="btn ghost sm" data-go="shoot">Choose a different video</button>
+</section>
+
+<!-- ============ 5. 채널 네 귀퉁이 ============ -->
+<section class="screen" id="s-roi">
+  <div class="stepdots"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></div>
+  <h2>Cut out the part of the channel to analyze<button class="ibtn" data-info="roi">i</button></h2>
+  <p class="sub">The channel has no end on screen, so you choose where to cut it: a <b>far line</b> and a <b>near line</b> across the water.
+     Tap the four points where those two lines meet the walls.</p>
+  <p class="sub" id="roiHint">Tap where the water meets the <b>left wall</b>, on the <b>far side</b>.</p>
+  <div class="stage">
+    <div class="hud" id="roiHud">0 / 4</div>
+    <canvas id="roiCv"></canvas>
+  </div>
+  <div class="legend"><span><i style="background:#22d3ee"></i>Channel boundary</span><span><i style="background:#ef4444"></i>Points you tapped</span></div>
+  <p class="sub">If a point is in the wrong place, drag it with your finger.</p>
+  <div class="card tight" id="roiLenBox" style="display:none">
+    <div class="kv"><span class="k">Width (fixed)</span><span class="v">31 cm</span></div>
+    <div class="kv"><span class="k">Length of this section</span><span class="v"><input class="lenin" id="roiLenIn" type="number" min="5" max="1000" step="1" inputmode="decimal"> cm</span></div>
+    <p class="sub" id="roiLenNote" style="margin:6px 0 0">Estimated from the camera angle. If you measured it (for example, tape marks on the wall), type the real value.</p>
+  </div>
+  <div class="row">
+    <button class="btn ghost sm" id="roiUndo">Undo last</button>
+    <button class="btn ghost sm" id="roiReset">Start over</button>
+  </div>
+  <button class="btn" id="roiGo" disabled>Find ducks</button>
+</section>
+
+<!-- ============ 6. 분석 중 ============ -->
+<section class="screen" id="s-run">
+  <h2>Finding ducks&hellip;</h2>
+  <div class="prog"><i id="progBar"></i></div>
+  <p class="sub" id="progTxt">Reading video</p>
+  <div class="note">Your phone is stepping through the video one frame at a time. A 10-second video
+    usually takes 10 to 30 seconds. Keep the screen on.</div>
+  <button class="btn ghost sm" id="runCancel">Cancel</button>
+</section>
+
+<!-- ============ 7. 검출 확인 ============ -->
+<section class="screen" id="s-check">
+  <div class="stepdots"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i></div>
+  <h2 id="ckTtl">Fix what the app found</h2>
+  <div class="stage" style="height:44vh;min-height:250px">
+    <canvas id="ckCv"></canvas>
+  </div>
+  <p class="sub" id="ckHint">Each line is one object the app tracked. A real duck always crosses the whole section, so lines that did not are already removed (grey). <b>Tap a line</b> to see what it is, then remove it or bring it back.</p>
+  <div class="row" id="ckSelRow" style="display:none">
+    <button class="btn sm" id="ckToggle">Remove</button>
+  </div>
+  <div class="chips" id="ckChips"></div>
+  <div class="card tight" id="ckStats"></div>
+  <div id="ckVerdict"></div>
+  <button class="btn" id="ckGo">View the flow</button>
+  <button class="btn ghost sm" data-go="shoot">Record again</button>
+  <button class="btn ghost sm" id="ckRetry">Search again with higher sensitivity</button>
+</section>
+
+<!-- ============ 8. 결과 ============ -->
+<section class="screen" id="s-result">
+  <h2 id="rsTtl"></h2>
+  <div class="stage">
+    <div class="hud" id="rsHud">0.00 s</div>
+    <video id="rsVid" playsinline muted preload="auto"></video>
+    <canvas id="rsCv" style="position:absolute;inset:0;z-index:2;background:transparent"></canvas>
+  </div>
+  <input type="range" id="rsTime" min="0" max="1000" value="0">
+  <div class="row">
+    <button class="btn sm" id="rsPlay">Play</button>
+    <button class="btn sm ghost" id="rsTrail">Trails: on</button>
+  </div>
+  <div class="legend" id="rsLegend"></div>
+  <div class="card tight" id="rsStats"></div>
+  <div class="note" id="rsSoWhat"></div>
+  <button class="btn ghost" id="rsFix">Something wrong? Remove objects</button>
+  <button class="btn" data-go="pick">Go record the next one</button>
+  <div class="card tight" id="rsSaveBox">
+    <h3 style="margin:2px 0 4px">Save your result</h3>
+    <div class="row">
+      <div><button class="btn sm" id="rsSave">Save image</button>
+        <p class="sub" style="font-size:12.5px;margin:6px 2px 0">One picture with every duck path</p></div>
+      <div><button class="btn sm" id="rsSaveVid">Save video</button>
+        <p class="sub" style="font-size:12.5px;margin:6px 2px 0" id="rsVidNote">The whole video with paths and arrows drawn on it</p></div>
+    </div>
+    <div class="prog" id="rsRecBar" style="display:none;margin-top:10px"><i id="rsRecFill"></i></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ======================================================================
+   Lab 4 파일럿 앱. 단일 파일, 네트워크 없음.
+   흐름:  concept -> brief -> shoot -> roi -> run -> check -> result
+   ====================================================================== */
+
+/* 아티팩트 뷰어는 자체 viewport 를 씌우므로 확대 금지를 JS 로 다시 박는다.
+   (안 하면 캔버스를 두 손가락으로 만질 때 페이지 전체가 확대된다) */
+(function(){
+  var m=document.querySelector('meta[name=viewport]');
+  if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+  m.content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+})();
+
+/* 데모 영상 6개 (2026-10-02 현제님 촬영, 삼각대 수직). 키 = cellKey (장애물 있으면 _obs).
+   영상은 앱에 박지 않고 GitHub Pages 의 demo/ 폴더에서 읽는다 (앱 html 이 9 MB 로 커지지 않게).
+   roi = 미리 찍어 둔 네 귀퉁이 (analysis/lab4_demo_roi.json). 사용자가 끌어서 고칠 수 있다. */
+const DEMOS = {"stream":{"src":"demo/stream_noobs.mp4","roi":[[160,4],[560,4],[567,956],[150,956]]},"path":{"src":"demo/path_noobs.mp4","roi":[[125,4],[540,4],[533,956],[117,956]]},"streak":{"src":"demo/streak_noobs.mp4","roi":[[150,4],[560,4],[563,956],[146,956]]},"stream_obs":{"src":"demo/stream_obs.mp4","roi":[[160,4],[533,4],[520,760],[150,760]]},"path_obs":{"src":"demo/path_obs.mp4","roi":[[956,162],[956,528],[75,528],[75,162]]},"streak_obs":{"src":"demo/streak_obs.mp4","roi":[[135,4],[510,4],[503,956],[123,956]]}};
+
+/* ---------------------------------------------------------------- 상태 */
+const S = {
+  widthCm : 31,            // 수로 폭 (cm). 실측 확정값이라 앱에서 묻지 않는다
+  concept : null,          // 'stream' | 'path' | 'streak'
+  url     : null,          // 지금 분석 중인 영상의 blob URL
+  vw:0, vh:0, dur:0,
+  frame0  : null,          // 첫 프레임 캔버스 (원본 크기)
+  roi     : [],            // 네 귀퉁이, frame0 픽셀 좌표
+  H       : null,          // 영상 픽셀 -> 실제 cm (x: 가로 0..31, y: 먼 쪽 0 -> 가까운 쪽 L)
+  lenEst  : null,          // 자른 구간 길이 추정값 (cm)
+  lenUser : null,          // 사용자가 직접 넣은 길이 (cm). 있으면 이걸 쓴다
+  allTracks: [],           // 검출된 모든 궤적 (off = 오리 아님으로 뺀 것)
+  nStatic : 0,             // 안 움직이는 노란 물체라서 자동으로 뺀 검출 수
+  sens    : 1,             // 0 = 둔감, 1 = 보통, 2 = 민감
+  det     : [],            // [{t, pts:[{x,y,a}]}]
+  tracks  : [],            // [{pts:[{i,t,x,y}]}]
+  shakePx : null,
+  shakeSat: false,
+  obs     : false,         // 장애물 있음/없음 (매뉴얼 표의 두 줄)
+  slowSet : 240,           // 장애물 있음 Streamline 칸은 240 fps 슬로모로 찍어 올린다 (v1.023)
+  slowF   : 1,             // 느린 구간 시간 배수. 속도 = 영상 기준 속도 x slowF
+  done    : {}
+};
+
+/* 매뉴얼 p.4 표와 같은 구조: 줄 = 장애물 없음/있음, 칸 = Streamline / Pathline / Streakline.
+   정의 문장(def)은 매뉴얼 p.1 Background & Theory 원문 그대로다. */
+const CONCEPTS = {
+  stream: {
+    name:'Streamline', en:'Streamline', col:'Streamlines',
+    secs:15,
+    def:'a line everywhere tangent to the velocity vector at a given instant in time',
+    what:'A line drawn along the direction the water moves <b>at one instant</b>. At every point on the line, '+
+         '<b>the direction of the line = the direction the water moves at that spot</b>.',
+    how:'Imagine taking a single photo. Draw a short arrow on each duck in the direction it is moving. '+
+        'Connect those arrows into smooth, unbroken lines, and you get streamlines. That is why the ducks must be in <b>many places at the same time</b>.',
+    kit:['10 yellow ducks','Phone on a tripod (looking straight down)'],
+    steps:['Hold all 10 ducks in one hand and stand <b>upstream of the phone (behind it)</b>.',
+           'Scatter them across the full channel width <b>all at once</b>.',
+           'Start recording 2 seconds before you throw, and keep recording <b>until all ducks leave the frame</b>.'],
+    watch:'Slide the time bar left and right. If the arrow pattern looks the same at every instant, the flow is '+
+          'steady.'
+  },
+  path: {
+    name:'Pathline', en:'Pathline', col:'Pathline (1 line)',
+    secs:15,
+    def:'an actual path traversed by a given fluid particle',
+    what:'The actual path traveled by <b>one</b> water particle. It is the line that joins one duck\'s footprints '+
+         '<b>from start to finish</b>.',
+    how:'Put just one duck in the water, mark each spot it passes, and connect the marks. That line is the pathline. '+
+        'With many ducks it is hard to tell which is which, so use <b>only one</b>.',
+    kit:['1 pink duck','Phone on a tripod (looking straight down)'],
+    steps:['Hold one pink duck and stand <b>upstream of the phone (behind it)</b>.',
+           'Place <b>only one duck</b> in the water.',
+           'Start recording 2 seconds before you release it, and keep recording <b>until the duck leaves the frame</b>.'],
+    watch:'This line is the actual path one duck took. Compare its shape with your streamline result.'
+  },
+  streak: {
+    name:'Streakline', en:'Streakline', col:'Streaklines (3 lines)',
+    secs:25,
+    def:'the locus of particles that have previously passed through a prescribed point',
+    what:'A line that shows where all particles that passed through <b>one fixed point</b> are <b>right now</b>. '+
+         'Think of chimney smoke. All the smoke came out of the same chimney, and the plume you see is where that smoke is now.',
+    how:'If you keep dropping ducks at <b>one spot</b>, they line up in a single row. That row is the streakline. '+
+        'Capture this row at <b>three different instants</b> (t₁, t₂, t₃) to get three lines. All three start at <b>the same point</b>.',
+    kit:['10 yellow ducks','Phone on a tripod (looking straight down)'],
+    steps:['Hold the ducks and stand <b>upstream of the phone (behind it)</b>. Rest your forearm on the rail to keep your hand steady.',
+           'Start recording. After 2 seconds, drop one duck every 2 seconds <b>at exactly the same spot</b>. Do not move your hand side to side.',
+           'After all ducks are in, keep recording <b>until all ducks leave the frame</b>.'],
+    watch:'Slide the time bar. The red line is the streakline that joins the ducks at that instant. Pick three instants and compare whether the lines have the same shape.'
+  }
+};
+const ROWS = [
+  {obs:false, name:'Without Obstruction', ko:'Without Obstruction'},
+  {obs:true,  name:'With Obstruction',    ko:'With Obstruction'}
+];
+/* 테이프 없이 길이를 추정하므로 수직에 가까울수록 정확하다 (모의: 90° ±1 cm, 75° ±4 cm, 45° ±24 cm, L=120 cm) */
+const MOUNT_STEP = 'Raise the tripod as high as it goes and point the phone <b>straight down</b> at the water, not at an angle. '+
+  'The more straight down it looks, the more accurate the speeds are. Both walls must be on screen.';
+const OBS_STEP = 'Set up the <b>V-notch plate</b> in the channel and aim the phone so the plate sits at the left edge of the screen. Record the ducks <b>downstream</b> of the plate.';
+const OBS_WATCH = ' Water that passes the V-notch becomes <b>turbulent</b>. Compare with the no-obstruction case and see how much the lines are disturbed.';
+/* V-notch 뒤 난류 카툰 조각. 판·거품 = analysis/lab4_obs_icons.ver.0.005.py (후보 D),
+   선·오리 = ver.0.006.py (줄마다 다른 방향으로 흩어지는 '카오스' 버전). 고정 SVG 다. */
+const OBS_WEIR = "<path d=\"M4,30 L14,30 M4,74 L14,74\" stroke=\"var(--waterline)\" stroke-width=\"1.4\"/><path d=\"M16,7 H24 V40 L30,52 L24,64 V97 H16 V64 L22,52 L16,40 Z\" fill=\"#9aa3ae\" stroke=\"#4b525c\" stroke-width=\"1.2\"/><path d=\"M22,52 L46,40 L46,64 Z\" fill=\"#dbeeff\" opacity=\".35\"/><circle cx=\"48.7\" cy=\"59.7\" r=\"2.7\" fill=\"#eaf4ff\" opacity=\"0.77\"/><circle cx=\"52.2\" cy=\"65.5\" r=\"1.1\" fill=\"#eaf4ff\" opacity=\"0.56\"/><circle cx=\"58.3\" cy=\"56.8\" r=\"3.0\" fill=\"#eaf4ff\" opacity=\"0.40\"/><circle cx=\"44.1\" cy=\"43.9\" r=\"2.2\" fill=\"#eaf4ff\" opacity=\"0.61\"/><circle cx=\"30.4\" cy=\"42.9\" r=\"1.6\" fill=\"#eaf4ff\" opacity=\"0.76\"/><circle cx=\"53.0\" cy=\"41.1\" r=\"2.8\" fill=\"#eaf4ff\" opacity=\"0.41\"/><circle cx=\"48.5\" cy=\"40.1\" r=\"1.0\" fill=\"#eaf4ff\" opacity=\"0.74\"/><circle cx=\"36.3\" cy=\"42.9\" r=\"3.2\" fill=\"#eaf4ff\" opacity=\"0.74\"/><circle cx=\"38.7\" cy=\"66.8\" r=\"2.2\" fill=\"#eaf4ff\" opacity=\"0.66\"/><circle cx=\"36.1\" cy=\"66.1\" r=\"2.5\" fill=\"#eaf4ff\" opacity=\"0.78\"/><circle cx=\"56.8\" cy=\"45.6\" r=\"1.8\" fill=\"#eaf4ff\" opacity=\"0.42\"/><circle cx=\"34.4\" cy=\"38.1\" r=\"1.7\" fill=\"#eaf4ff\" opacity=\"0.62\"/><circle cx=\"30.1\" cy=\"57.7\" r=\"1.7\" fill=\"#eaf4ff\" opacity=\"0.49\"/><circle cx=\"54.6\" cy=\"51.4\" r=\"1.7\" fill=\"#eaf4ff\" opacity=\"0.57\"/><circle cx=\"51.1\" cy=\"37.8\" r=\"3.1\" fill=\"#eaf4ff\" opacity=\"0.36\"/><circle cx=\"52.5\" cy=\"63.0\" r=\"1.0\" fill=\"#eaf4ff\" opacity=\"0.70\"/><circle cx=\"41.0\" cy=\"54.5\" r=\"1.0\" fill=\"#eaf4ff\" opacity=\"0.37\"/><circle cx=\"35.4\" cy=\"66.6\" r=\"1.4\" fill=\"#eaf4ff\" opacity=\"0.69\"/><circle cx=\"57.9\" cy=\"66.1\" r=\"1.8\" fill=\"#eaf4ff\" opacity=\"0.51\"/><circle cx=\"45.7\" cy=\"60.8\" r=\"1.2\" fill=\"#eaf4ff\" opacity=\"0.69\"/><circle cx=\"53.9\" cy=\"63.5\" r=\"1.1\" fill=\"#eaf4ff\" opacity=\"0.78\"/><circle cx=\"32.7\" cy=\"46.9\" r=\"2.3\" fill=\"#eaf4ff\" opacity=\"0.76\"/><path d=\"M79,28 A7,7 0 1 1 72,21 A4.2,4.2 0 1 1 74.45,28\" fill=\"none\" stroke=\"#8fc3ee\" stroke-width=\"1.5\" stroke-linecap=\"round\" opacity=\"0.8\"/><path d=\"M85,76 A7,7 0 1 0 78,83 A4.2,4.2 0 1 0 80.45,76\" fill=\"none\" stroke=\"#8fc3ee\" stroke-width=\"1.5\" stroke-linecap=\"round\" opacity=\"0.8\"/><path d=\"M118,52 A6,6 0 1 1 112,46 A3.5999999999999996,3.5999999999999996 0 1 1 114.1,52\" fill=\"none\" stroke=\"#8fc3ee\" stroke-width=\"1.5\" stroke-linecap=\"round\" opacity=\"0.8\"/>";
+const OBS_TURB = {"stream": "<path d=\"M34,20 C37.7,18.7 48.7,11.0 56,12 C63.3,13.0 71.3,25.7 78,26 C84.7,26.3 89.0,14.7 96,14 C103.0,13.3 111.7,22.3 120,22 C128.3,21.7 141.7,13.7 146,12\" fill=\"none\" stroke=\"var(--accent)\" stroke-width=\"2\" stroke-dasharray=\"4 4\" marker-end=\"url(#${id}a)\"/><path d=\"M40,50 C43.0,48.0 51.7,38.7 58,38 C64.3,37.3 74.3,41.7 78,46 C81.7,50.3 82.3,59.7 80,64 C77.7,68.3 68.3,72.7 64,72 C59.7,71.3 54.3,63.3 54,60 C53.7,56.7 60.7,53.3 62,52\" fill=\"none\" stroke=\"var(--accent)\" stroke-width=\"2\" stroke-dasharray=\"4 4\" marker-end=\"url(#${id}a)\"/><path d=\"M36,86 C40.3,85.0 52.7,79.0 62,80 C71.3,81.0 83.3,93.3 92,92 C100.7,90.7 109.0,79.7 114,72 C119.0,64.3 123.0,52.3 122,46 C121.0,39.7 110.3,36.0 108,34\" fill=\"none\" stroke=\"var(--accent)\" stroke-width=\"2\" stroke-dasharray=\"4 4\" marker-end=\"url(#${id}a)\"/><path d=\"M98,56 C101.3,57.3 112.0,65.0 118,64 C124.0,63.0 129.0,48.7 134,50 C139.0,51.3 145.7,68.3 148,72\" fill=\"none\" stroke=\"var(--accent)\" stroke-width=\"2\" stroke-dasharray=\"4 4\" marker-end=\"url(#${id}a)\"/><g transform=\"translate(56,9) rotate(8) scale(0.64,0.64)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(96,11) rotate(-5) scale(0.64,0.64)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(78,43) rotate(30) scale(0.64,0.64)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(64,69) rotate(9) scale(-0.64,0.64)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(62,77) rotate(6) scale(0.64,0.64)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(114,69) rotate(-30) scale(0.64,0.64)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(118,61) rotate(-9) scale(0.64,0.64)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g>", "path": "<path d=\"M40,52 C42.7,49.0 50.3,35.3 56,34 C61.7,32.7 72.7,39.3 74,44 C75.3,48.7 68.0,61.0 64,62 C60.0,63.0 49.7,55.0 50,50 C50.3,45.0 59.0,35.7 66,32 C73.0,28.3 86.0,24.7 92,28 C98.0,31.3 103.0,45.0 102,52 C101.0,59.0 86.7,64.3 86,70 C85.3,75.7 92.3,84.7 98,86 C103.7,87.3 117.0,82.7 120,78 C123.0,73.3 114.3,64.3 116,58 C117.7,51.7 126.3,41.3 130,40 C133.7,38.7 136.7,48.3 138,50\" fill=\"none\" stroke=\"#ff5fa8\" stroke-width=\"2.2\" stroke-dasharray=\"1.5 4.5\" stroke-linecap=\"round\"/><circle cx=\"40\" cy=\"52\" r=\"3\" fill=\"#ff5fa8\"/><g transform=\"translate(138,47) rotate(30) scale(1.05,1.05)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"#ff5fa8\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"#ff5fa8\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g>", "streak": "<path d=\"M40,52 C43.0,50.0 51.3,44.3 58,40 C64.7,35.7 73.0,26.0 80,26 C87.0,26.0 93.0,41.3 100,40 C107.0,38.7 114.3,20.3 122,18 C129.7,15.7 142.0,24.7 146,26\" fill=\"none\" stroke=\"#ffb4a8\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><path d=\"M40,52 C42.7,54.3 49.7,64.7 56,66 C62.3,67.3 72.0,57.7 78,60 C84.0,62.3 85.3,75.7 92,80 C98.7,84.3 109.7,88.0 118,86 C126.3,84.0 138.0,71.0 142,68\" fill=\"none\" stroke=\"#ff5a4a\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><path d=\"M40,52 C44.0,51.7 57.3,47.0 64,50 C70.7,53.0 79.3,64.3 80,70 C80.7,75.7 65.3,85.0 68,84 C70.7,83.0 88.3,70.3 96,64 C103.7,57.7 108.0,47.0 114,46 C120.0,45.0 126.3,58.3 132,58 C137.7,57.7 145.3,46.3 148,44\" fill=\"none\" stroke=\"#b8231a\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><g transform=\"translate(80,23) rotate(0) scale(0.6,0.6)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(122,15) rotate(-17) scale(0.6,0.6)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(78,57) rotate(21) scale(0.6,0.6)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(118,83) rotate(-13) scale(0.6,0.6)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(80,67) rotate(30) scale(0.6,0.6)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(114,43) rotate(-9) scale(0.6,0.6)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><text x=\"146\" y=\"20\" text-anchor=\"end\" font-size=\"9\" font-weight=\"700\" fill=\"#ffb4a8\">t₁</text><text x=\"142\" y=\"80\" text-anchor=\"end\" font-size=\"9\" font-weight=\"700\" fill=\"#ff5a4a\">t₂</text><text x=\"148\" y=\"40\" text-anchor=\"end\" font-size=\"9\" font-weight=\"700\" fill=\"#b8231a\">t₃</text><circle cx=\"40\" cy=\"52\" r=\"6.5\" fill=\"none\" stroke=\"#e0453a\" stroke-width=\"1.8\" stroke-dasharray=\"2 2\"/><circle cx=\"40\" cy=\"52\" r=\"2\" fill=\"#e0453a\"/>"};
+/* 유맥선 장애물 없음: 세 순간(t1,t2,t3)의 선이 한 줄로 겹친다. analysis/lab4_obs_icons.ver.0.007.py */
+const STREAK_CALM = "<path d=\"M14,52 L148,52\" fill=\"none\" stroke=\"#ffb4a8\" stroke-width=\"7\" stroke-linecap=\"round\"/><path d=\"M14,52 L148,52\" fill=\"none\" stroke=\"#ff5a4a\" stroke-width=\"4.4\" stroke-linecap=\"round\"/><path d=\"M14,52 L148,52\" fill=\"none\" stroke=\"#b8231a\" stroke-width=\"2\" stroke-linecap=\"round\"/><circle cx=\"14\" cy=\"52\" r=\"6.5\" fill=\"none\" stroke=\"#e0453a\" stroke-width=\"1.8\" stroke-dasharray=\"2 2\"/><circle cx=\"14\" cy=\"52\" r=\"2\" fill=\"#e0453a\"/><g transform=\"translate(40,49) rotate(0) scale(0.7,0.7)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(68,49) rotate(0) scale(0.7,0.7)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(96,49) rotate(0) scale(0.7,0.7)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g><g transform=\"translate(124,49) rotate(0) scale(0.7,0.7)\"><ellipse cx=\"0\" cy=\"2\" rx=\"7\" ry=\"4.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M-6,1 q-3,-4 -1,-6\" fill=\"none\" stroke=\"#5a3d00\" stroke-width=\".9\"/><circle cx=\"4.2\" cy=\"-3.2\" r=\"3.6\" fill=\"var(--duck)\" stroke=\"#5a3d00\" stroke-width=\".9\"/><path d=\"M7.4,-3.4 l3.4,1 l-3.2,1.3 z\" fill=\"#ff7a1a\"/><circle cx=\"5.2\" cy=\"-4\" r=\".9\" fill=\"#1b1b1b\"/></g>";
+function cellKey(k, obs){ return k + (obs ? '_obs' : ''); }
+function cellName(){ return CONCEPTS[S.concept].name + (S.obs ? ' · with obstruction' : ' · without obstruction'); }
+
+/* 개념별 카툰 (인라인 SVG). 물은 왼쪽 -> 오른쪽. viewBox 160 x 104. */
+let _svgN = 0;
+function conceptSvg(kind, obs){
+  const id = 'c' + (++_svgN);
+  const W=160, H=104, cx=80, cy=52;
+  const defs = `<defs>
+    <marker id="${id}a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="var(--accent)"/></marker>
+    <marker id="${id}r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="#e0453a"/></marker></defs>`;
+  const water = `<rect x="2" y="6" width="${W-4}" height="${H-12}" rx="12" fill="var(--water)" stroke="var(--waterline)" stroke-width="2"/>`+
+    [22,50,82].map((y,i)=>`<path d="M${10+i*40},${y} q5,-3 10,0 t10,0" fill="none" stroke="var(--waterline)" stroke-width="1.3" opacity=".7"/>`).join('');
+  // 장애물 = V-notch 판 (위에서 본 모습, lab4_obs_icons.ver.0.005.py 후보 D). 물이 틈을 지나 난류가 된다.
+  const block = obs ? OBS_WEIR : '';
+  // 귀여운 오리 (옆모습). x,y = 몸통 가운데
+  const duck = (x,y,s,col)=>{ s=s||1; col=col||'var(--duck)';
+    return `<g transform="translate(${x},${y}) scale(${s})">
+      <ellipse cx="0" cy="2" rx="7" ry="4.6" fill="${col}" stroke="#5a3d00" stroke-width=".9"/>
+      <path d="M-6,1 q-3,-4 -1,-6" fill="none" stroke="#5a3d00" stroke-width=".9"/>
+      <circle cx="4.2" cy="-3.2" r="3.6" fill="${col}" stroke="#5a3d00" stroke-width=".9"/>
+      <path d="M7.4,-3.4 l3.4,1 l-3.2,1.3 z" fill="#ff7a1a"/>
+      <circle cx="5.2" cy="-4" r=".9" fill="#1b1b1b"/></g>`; };
+  const line = (d,col,dash,mk)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linecap="round"`+
+    (dash?` stroke-dasharray="${dash}"`:'')+(mk?` marker-end="url(#${id}${mk})"`:'')+`/>`;
+  const PINK='#ff5fa8';
+  let body='';
+
+  if(obs){
+    body = OBS_TURB[kind].replace(/\$\{id\}/g, id);
+  } else if(kind==='stream'){
+    [24,52,80].forEach(y=>{ body += line(`M12,${y} L148,${y}`,'var(--accent)','4 4','a'); });
+    [[34,24],[80,24],[126,24],[34,52],[80,52],[126,52],[34,80],[80,80],[126,80]]
+      .forEach(p=>{ body += duck(p[0],p[1]-3,0.72); });
+  } else if(kind==='path'){
+    body += line(`M10,64 C50,62 90,54 132,48`, PINK, '1.5 5', '');
+    body += `<circle cx="10" cy="64" r="3" fill="${PINK}"/>`;
+    body += duck(138, 44, 1.1, PINK);
+    body += `<text x="10" y="52" font-size="9" font-weight="700" fill="${PINK}">start</text>`;
+  } else {
+    body = STREAK_CALM;
+  }
+  const flow = `<text x="${W-8}" y="${H-10}" text-anchor="end" font-size="8.5" fill="var(--sub)">flow →</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" `+
+         `aria-label="${CONCEPTS[kind].en}${obs?' with obstruction':''}">${defs}${water}${block}${body}${flow}</svg>`;
+}
+
+/* ---------------------------------------------------------------- 유틸 */
+let _toastT=null;
+function toast(msg, kind){
+  const t=document.getElementById('toast');
+  t.innerHTML = msg; t.className = 'show ' + (kind||'');
+  clearTimeout(_toastT); _toastT=setTimeout(()=>{t.className='';}, 7000);
+  window.scrollTo(0,0);
+}
+const $ = id => document.getElementById(id);
+const median = a => { if(!a.length) return 0; const b=[...a].sort((x,y)=>x-y); return b[b.length>>1]; };
+const pct = (a,p) => { if(!a.length) return 0; const b=[...a].sort((x,y)=>x-y); return b[Math.min(b.length-1,Math.max(0,Math.round(p/100*(b.length-1))))]; };
+
+/* ---------------------------------------------------------------- 화면 전환 */
+const NAV=[];
+function curScreen(){ const el=document.querySelector('.screen.on'); return el? el.id.slice(2):null; }
+function show(id, isBack){
+  const from=curScreen();
+  if(!isBack && from && from!==id){ NAV.push(from); if(NAV.length>60) NAV.shift(); }
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $('s-'+id).classList.add('on');
+  window.scrollTo(0,0);
+  $('hdrTag').textContent = S.concept ? CONCEPTS[S.concept].name + (S.obs?' · obstruction':'') : 'Lab 4';
+  $('navBack').style.display = (id==='intro'||NAV.length===0) ? 'none':'';
+  if(id==='result') requestAnimationFrame(rsFit);
+  if(id==='roi')    requestAnimationFrame(()=>{ roiFit(); roiDraw(); });
+  if(id==='check')  requestAnimationFrame(()=>{ ckFit(); ckDraw(); });
+  if(id==='pick')   renderConcepts();
+}
+function goBack(){
+  stopPlay();
+  const cur=curScreen();
+  if(cur==='roi' && S.roi.length){ S.roi.pop(); roiDraw(); roiUI(); return; }
+  if(!NAV.length){ show('intro',true); return; }
+  let prev=NAV.pop(); while(prev===cur && NAV.length) prev=NAV.pop();
+  show(prev,true);
+}
+$('navBack').onclick=goBack;
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ stopPlay(); show(b.dataset.go); });
+
+/* ---------------------------------------------------------------- i 버튼 */
+const INFO = {
+ why3:{t:'Why record the three lines separately?', b:
+  '<p>All three lines describe the same flow, but each one is <b>made in a different way</b>.</p>'+
+  '<p>A <b>streamline</b> freezes time and asks, "Where is the water going at this instant?" '+
+  'The ducks must be spread out in space, and they must all be there at the same time.</p>'+
+  '<p>A <b>pathline</b> follows one duck for the whole time. You need one duck you will not lose sight of.</p>'+
+  '<p>A <b>streakline</b> is like chimney smoke. Everything came out of one opening, and you look at where it all is now. '+
+  'You must release ducks again and again at the same spot.</p>'+
+  '<p>That is why one video cannot capture all three. If you throw in all the ducks, you cannot follow a single one. '+
+  'If you follow only one duck, there is no spatial pattern. Three lines in two situations means '+
+  '<b>3 × 2 = 6 videos</b>.</p>'+
+  '<p><b>Question to think about</b> (manual Checkout Question 1): Under what condition do the three lines <b>become identical</b>? '+
+  'Put your steady and unsteady results side by side, and the answer will show.</p>'},
+ clamp:{t:'Why holding the phone still matters so much', b:
+  '<p>These values were measured from a hand-held video recorded on this flume.</p>'+
+  '<table><tbody>'+
+  '<tr><td>Duck travel per frame</td><td><b>2.8 px</b></td></tr>'+
+  '<tr><td>Camera shake per frame</td><td><b>1.0 px</b> (max 6.2)</td></tr>'+
+  '<tr><td>Total image drift over 4.9 s</td><td><b>110 px</b></td></tr>'+
+  '</tbody></table>'+
+  '<p>The camera moved about one third as far as the duck did. The duck speed measured from that video was '+
+  '<b>5.0 cm/s</b>. After removing the camera motion from the same video, it was <b>9.0 cm/s</b>.</p>'+
+  '<p><b>Shake alone made the speed 45% wrong.</b> A fixed mount removes this error completely, '+
+  'and it costs nothing.</p>'},
+ roi:{t:'How and why cut out a section?', b:
+  '<div class="card tight" style="margin:4px 0 6px"><svg viewBox="0 0 320 380" width="100%" style="display:block;max-width:420px;margin:0 auto" role="img" font-family="system-ui,-apple-system,sans-serif" aria-label="Top-down view of the channel with the four tap points"><defs><marker id="roiAr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="var(--cyan)"/></marker><marker id="roiDm" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L7,3.5 L0,7 z" fill="var(--sub)"/></marker><linearGradient id="roiFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--card)" stop-opacity="1"/><stop offset="1" stop-color="var(--card)" stop-opacity="0"/></linearGradient></defs><rect x="0" y="0" width="320" height="380" rx="12" fill="var(--card)"/><rect x="18" y="10" width="54" height="340" fill="var(--line)"/><rect x="238" y="10" width="54" height="340" fill="var(--line)"/><rect x="72" y="10" width="10" height="340" fill="var(--ink)" opacity=".75"/><rect x="228" y="10" width="10" height="340" fill="var(--ink)" opacity=".75"/><rect x="82" y="10" width="146" height="340" fill="var(--water)"/><rect x="0" y="10" width="320" height="26" fill="url(#roiFade)"/><rect x="0" y="324" width="320" height="26" fill="url(#roiFade)" transform="rotate(180 160 337)"/><text x="155" y="24" text-anchor="middle" font-size="10" fill="var(--sub)">channel keeps going ↑</text><text x="155" y="346" text-anchor="middle" font-size="10" fill="var(--sub)">channel keeps going ↓</text><text x="45" y="190" text-anchor="middle" font-size="10" fill="var(--sub)" transform="rotate(-90 45 190)">wall</text><text x="265" y="190" text-anchor="middle" font-size="10" fill="var(--sub)" transform="rotate(90 265 190)">wall</text><line x1="60" y1="80" x2="250" y2="80" stroke="#ff5a3c" stroke-width="2" stroke-dasharray="6 4"/><line x1="60" y1="290" x2="250" y2="290" stroke="#ff5a3c" stroke-width="2" stroke-dasharray="6 4"/><text x="155" y="100" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ff5a3c">far cut line (you choose)</text><text x="150" y="270" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ff5a3c">near cut line (you choose)</text><path d="M90,80 L214,80" stroke="var(--cyan)" stroke-width="2.4" fill="none" marker-end="url(#roiAr)"/><path d="M220,88 L220,276" stroke="var(--cyan)" stroke-width="2.4" fill="none" marker-end="url(#roiAr)"/><path d="M212,290 L96,290" stroke="var(--cyan)" stroke-width="2.4" fill="none" marker-end="url(#roiAr)"/><path d="M88,282 L88,96" stroke="var(--cyan)" stroke-width="2.4" fill="none" stroke-dasharray="3 4"/><g font-size="12" font-weight="700" text-anchor="middle"><circle cx="84" cy="80" r="10" fill="#ff5a3c" stroke="#fff" stroke-width="2"/><text x="84" y="84" fill="#fff">1</text><circle cx="226" cy="80" r="10" fill="#ff5a3c" stroke="#fff" stroke-width="2"/><text x="226" y="84" fill="#fff">2</text><circle cx="226" cy="290" r="10" fill="#ff5a3c" stroke="#fff" stroke-width="2"/><text x="226" y="294" fill="#fff">3</text><circle cx="84" cy="290" r="10" fill="#ff5a3c" stroke="#fff" stroke-width="2"/><text x="84" y="294" fill="#fff">4</text></g><line x1="90" y1="150" x2="220" y2="150" stroke="var(--sub)" stroke-width="1.3" marker-start="url(#roiDm)" marker-end="url(#roiDm)"/><rect x="122" y="140" width="66" height="19" rx="4" fill="var(--water)"/><text x="155" y="154" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">31 cm</text><text x="155" y="171" text-anchor="middle" font-size="9.5" fill="var(--sub)">(always the same)</text><line x1="155" y1="184" x2="155" y2="252" stroke="var(--sub)" stroke-width="1.3" marker-start="url(#roiDm)" marker-end="url(#roiDm)"/><rect x="117" y="209" width="76" height="30" rx="4" fill="var(--water)"/><text x="155" y="222" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">length L</text><text x="155" y="235" text-anchor="middle" font-size="9.5" fill="var(--sub)">(app estimates)</text><path d="M92,72 L120,50" stroke="#ff5a3c" stroke-width="1.6" stroke-dasharray="3 3"/><rect x="112" y="36" width="150" height="22" rx="6" fill="#ff5a3c"/><text x="187" y="51" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">tap where water meets wall</text><text x="160" y="372" text-anchor="middle" font-size="10" fill="var(--sub)">what your phone screen shows</text></svg></div>'+
+  '<p class="sub" style="margin-top:0">Top-down view, as the phone sees it. Tap <b>1 → 2 → 3 → 4</b> around the section.</p>'+
+  '<h3>How</h3>'+
+  '<p><b>1. Choose two cut lines.</b> The channel has no end on screen. Pick a <b>far</b> line near the top of the screen and a '+
+  '<b>near</b> line near the bottom. Use as much of the visible channel as you can.</p>'+
+  '<p><b>2. Tap the four corners in order.</b> Each corner is where a cut line meets the <b>edge of the water</b> on a wall, '+
+  'not the outer edge of the wall or the rail. Go around the section: <b>far-left → far-right → near-right → near-left</b>. '+
+  'Do not cut across it.</p>'+
+  '<p><b>3. Check the length.</b> The width is always 31 cm. The app estimates the length L from the picture. '+
+  'If you measured it, type the real value.</p>'+
+  '<h3>Why</h3>'+
+  '<p><b>To ignore everything outside the channel.</b> A program that only looks at color can mistake a wet floor, yellow tape, '+
+  'or a duck reflected in the glass for a duck. Fencing off the water removes them.</p>'+
+  '<p><b>To convert pixels to centimeters.</b> The four points form a rectangle that is 31 cm wide in real life. '+
+  'The app uses it to unfold the picture into a top-down map. That is how it turns duck movement on screen into cm/s. '+
+  'This works best when the phone points straight down.</p>'},
+ speed:{t:'How is speed calculated?', b:
+  '<p>The app turns each duck position on screen into a position on a top-down map of the channel, in centimeters. '+
+  'Speed = distance on that map ÷ time between frames.</p>'+
+  '<p>Because the map is unfolded in both directions, the far side is no longer squashed, '+
+  'both across and along the flow.</p>'+
+  '<p><b>What can still be wrong:</b> the length of the section. Speeds along the flow scale directly with it. '+
+  'If the length is 10% too long, the speeds come out 10% too fast. A measured length (tape marks) removes this error.</p>'}
+};
+document.addEventListener('click', e=>{
+  const b=e.target.closest('[data-info]'); if(!b) return;
+  const k=INFO[b.dataset.info]; if(!k) return;
+  $('infoTtl').textContent=k.t; $('infoBody').innerHTML=k.b; $('infoModal').classList.add('on');
+});
+$('infoClose').onclick=()=>$('infoModal').classList.remove('on');
+$('infoModal').onclick=e=>{ if(e.target.id==='infoModal') $('infoModal').classList.remove('on'); };
+
+/* ---------------------------------------------------------------- 개념 고르기 */
+function renderConcepts(){
+  const host=$('conceptList'); host.innerHTML='';
+  host.insertAdjacentHTML('beforeend','<div></div>');
+  Object.keys(CONCEPTS).forEach(k=>{
+    const c=CONCEPTS[k];
+    host.insertAdjacentHTML('beforeend', `<div class="ch">${c.col}</div>`);
+  });
+  ROWS.forEach(r=>{
+    host.insertAdjacentHTML('beforeend', `<div class="rh" title="${r.ko}">${r.name}</div>`);
+    Object.keys(CONCEPTS).forEach(k=>{
+      const d=S.done[cellKey(k,r.obs)];
+      const b=document.createElement('button');
+      b.className='cell'+(d?' done':'');
+      b.setAttribute('aria-label', CONCEPTS[k].en+' '+r.name+(d?' (done)':''));
+      b.innerHTML = conceptSvg(k, r.obs) + `<span class="nm">${CONCEPTS[k].name}</span>` +
+                    (d? '<span class="ok">&#10003;</span>':'');
+      b.onclick=()=>{ S.concept=k; S.obs=r.obs; fillBrief(); if(S.demoMode){ loadDemo(); } else show('brief'); };
+      host.appendChild(b);
+    });
+  });
+  $('allDoneNote').style.display = Object.keys(S.done).length>=6 ? '' : 'none';
+}
+
+function fillBrief(){
+  const c=CONCEPTS[S.concept];
+  $('brTtl').innerHTML = c.name + ' &middot; ' + (S.obs ? 'With obstruction' : 'Without obstruction');
+  $('brDef').textContent = '“' + c.def[0].toUpperCase() + c.def.slice(1) + '”';
+  $('brWhat').innerHTML = c.what;
+  $('brFig').innerHTML = conceptSvg(S.concept, S.obs);
+  $('brHow').innerHTML = c.how + (S.obs ? OBS_WATCH : '');
+  $('brKit').innerHTML = (S.obs ? c.kit.concat(['V-notch plate']) : c.kit).map(x=>`<span>${x}</span>`).join('');
+  $('brSteps').innerHTML = [MOUNT_STEP].concat(S.obs ? [OBS_STEP].concat(c.steps) : c.steps).map(x=>`<li>${x}</li>`).join('');
+  $('shTtl').textContent = 'Record ' + c.name + (S.obs ? ' (with obstruction)' : '');
+  /* v1.021: 장애물 있음 Streamline 칸은 슬로모로 찍는다. 웹 카메라는 슬로모가 안 되니 녹화 버튼을 숨긴다 */
+  /* v1.024: 장애물 있음 세 칸은 카메라 앱 슬로모(240 fps)로 찍어 올린다. 체크 3개, 업로드 버튼만 */
+  const sl=isSlowCell();
+  $('shSlowRow').style.display = sl ? '' : 'none';
+  $('shChkTtl').textContent = sl ? 'Before you record, check all three' : 'Before you record, check both';
+  $('shHint').textContent = sl ? 'Record in the Camera app, then come back here and upload the video.'
+                               : 'Start recording first, then walk upstream behind the phone and put the ducks in.';
+  $('lbCam').style.display = sl ? 'none' : '';
+  $('lbLib').textContent = sl ? 'Upload your video' : 'Choose a video you already recorded';
+  shGate();
+}
+function isSlowCell(){ return !!S.obs; }
+
+/* ---------------------------------------------------------------- 영상 읽기 */
+function b64ToBlob(b64, type){
+  const bin=atob(b64); const len=bin.length; const buf=new Uint8Array(len);
+  for(let i=0;i<len;i++) buf[i]=bin.charCodeAt(i);
+  return new Blob([buf],{type:type||'video/mp4'});
+}
+/* 표지의 데모 버튼: 고르기 화면으로 가서, 칸을 누르면 바로 그 칸의 데모 영상을 연다 */
+S.demoMode=false;
+function loadDemo(){
+  const d=DEMOS[cellKey(S.concept,S.obs)];
+  if(!d){ toast('No demo video for this one yet.','warn'); return; }
+  S.slowF=1;                                   // 데모 영상은 일반 속도
+  loadVideo(d.src, d.roi.map(q=>({x:q[0],y:q[1]})));
+}
+$('btnStart').onclick = ()=>{ S.demoMode=false; show('pick'); };
+$('btnDemo').onclick = ()=>{ S.demoMode=true; show('pick');
+  toast('Demo mode: tap any cell to open a sample video recorded on this flume.'); };
+$('btnDemo2').onclick = loadDemo;
+function shGate(){
+  const ok=$('shMount').checked && $('shFrame').checked && (!isSlowCell() || $('shSlowChk').checked);
+  $('lbCam').classList.toggle('off',!ok); $('lbLib').classList.toggle('off',!ok);
+}
+$('shMount').onchange=shGate; $('shFrame').onchange=shGate; $('shSlowChk').onchange=shGate;
+function pickedFile(e){
+  const f=e.target.files[0]; e.target.value=''; if(!f) return; S.recDur=0;
+  if(isSlowCell()) slowCheck(f);
+  else { S.slowF=1; loadVideo(URL.createObjectURL(f)); }
+}
+$('fileCam').onchange = pickedFile;
+$('fileLib').onchange = pickedFile;
+
+/* ---------------------------------------------------------------- 슬로모 확인 (v1.021)
+   파일의 moov 를 직접 읽어 저장 fps 와 프레임 간격(stts)을 본다. 정본은 Lab4_fps_probe.html.
+   2026-10-14 실측: 아이폰 240 fps 슬로모를 카톡으로 받은 파일은 24 fps 고정, 앞뒤 1~2.5 s 만 정상 속도,
+   가운데가 4배 느렸다 (설정값으로 계산한 8배가 아님). 그래서 배수는 추정값으로 두고 스톱워치로 잴 수 있게 한다. */
+async function mp4Bytes(file, off, len){ return new DataView(await file.slice(off, off+len).arrayBuffer()); }
+function fcc(dv,o){ return String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3)); }
+function u64(dv,o){ return dv.getUint32(o)*4294967296 + dv.getUint32(o+4); }
+async function readTiming(file){
+  let off=0, moov=null;
+  while(off+8<=file.size){
+    const dv=await mp4Bytes(file, off, 16);
+    let size=dv.getUint32(0), hdr=8; const type=fcc(dv,4);
+    if(size===1){ size=u64(dv,8); hdr=16; } else if(size===0) size=file.size-off;
+    if(size<8) break;
+    if(type==='moov'){ moov={off,size,hdr}; break; }
+    off+=size;
+  }
+  if(!moov || moov.size>60e6) return null;
+  const dv=await mp4Bytes(file, moov.off+moov.hdr, moov.size-moov.hdr);
+  const BOX=new Set(['moov','trak','mdia','minf','stbl','edts']);
+  const tracks=[]; let tr=null, mv=null;
+  (function walk(s0,e0,parent){
+    let o=s0;
+    while(o+8<=e0){
+      let size=dv.getUint32(o), hdr=8; const type=fcc(dv,o+4);
+      if(size===1){ size=u64(dv,o+8); hdr=16; } else if(size===0) size=e0-o;
+      if(size<8 || o+size>e0) break;
+      const s=o+hdr, ver=dv.getUint8(s);
+      if(type==='mvhd') mv = ver===1 ? {ts:dv.getUint32(s+20), dur:u64(dv,s+24)} : {ts:dv.getUint32(s+12), dur:dv.getUint32(s+16)};
+      else if(type==='trak'){ tr={stts:[], hdlr:'', ts:0}; tracks.push(tr); }
+      else if(tr && type==='mdhd') tr.ts = ver===1 ? dv.getUint32(s+20) : dv.getUint32(s+12);
+      else if(tr && type==='hdlr' && parent==='mdia') tr.hdlr=fcc(dv,s+8);
+      else if(tr && type==='stts'){ const n=dv.getUint32(s+4); for(let i=0,p=s+8;i<n && p+8<=o+size;i++,p+=8) tr.stts.push([dv.getUint32(p), dv.getUint32(p+4)]); }
+      if(BOX.has(type)) walk(s, o+size, type);
+      o+=size;
+    }
+  })(0, dv.byteLength, '');
+  const v=tracks.filter(t=>t.hdlr==='vide' && t.ts>0 && t.stts.length).sort((a,b)=>b.stts.length-a.stts.length)[0];
+  if(!v) return null;
+  let n=0, sum=0, dmin=Infinity, dmax=0;
+  v.stts.forEach(([c,d])=>{ n+=c; sum+=c*d; if(d>0){ dmin=Math.min(dmin,d); dmax=Math.max(dmax,d); } });
+  const sec=sum/v.ts;
+  /* 간격이 같은 프레임 묶음 = 속도 구간. 비슷한 간격(5% 안)은 합친다 */
+  const runs=[]; let t=0;
+  v.stts.forEach(([c,d])=>{ const ms=1000*d/v.ts, last=runs[runs.length-1];
+    if(last && Math.abs(last.ms-ms)<=0.05*last.ms){ last.n+=c; last.t1=t+c*d/v.ts; }
+    else runs.push({n:c, ms, t0:t, t1:t+c*d/v.ts}); t+=c*d/v.ts; });
+  return {n, sec, fps:n/sec, fpsLo:v.ts/dmax, fpsHi:v.ts/dmin, runs:runs.filter(r=>r.n>1), mvSec: mv&&mv.ts ? mv.dur/mv.ts : null};
+}
+
+const slVid=$('slVid');
+let slStep=1/30, slA=null, slB=null;
+function slSetF(F, why){
+  $('slF').value = (+F).toFixed(2); $('slFwhy').innerHTML = why||'';
+  slShowReal();
+}
+function slShowReal(){ const F=+$('slF').value;
+  $('slReal').textContent = F>0 ? (1/F).toFixed(3)+' s of real time' : '--'; }
+$('slF').oninput = ()=>{ slShowReal(); $('slFwhy').textContent='You typed this number.'; };
+
+/* 2026-10-14 실측: 아이폰 240 fps 슬로모 6개 영상의 느린 구간 = 4배 (같은 수로 일반 영상 속도 비교 + 소리).
+   설정값으로 계산한 240/30 = 8 이 아니다. 그래서 기본값을 4 로 둔다. */
+const STRETCH_240 = 4;
+const STRETCH_WHY = 'Measured on this flume: iPhone Slo-mo at 240 fps came out 4&times; slower in the slow part '+
+  '(compared with normal-speed videos of the same flow). Not 240 &divide; 30 = 8.';
+async function slowCheck(file){
+  const url=URL.createObjectURL(file);
+  S.slowUrl=url; slA=slB=null; $('slTA').textContent=$('slTB').textContent='video --';
+  $('slSwA').value=$('slSwB').value=''; $('slCal').textContent='';
+  $('slFile').innerHTML='Reading the file&hellip;'; $('slVerdict').textContent='';
+  show('slow');
+  let T=null; try{ T=await readTiming(file); }catch(e){ T=null; }
+  const guess=STRETCH_240;
+  if(!T){
+    $('slFile').innerHTML = kv('File', (file.size/1e6).toFixed(1)+' MB') + kv('Frame timing', 'Could not read');
+    $('slVerdict').innerHTML='The app could not read the frame timing inside this file.';
+    slSetF(guess, STRETCH_WHY);
+  } else {
+    slStep=1/T.fps;
+    const uneven = T.fpsHi/T.fpsLo > 1.05;
+    $('slFile').innerHTML =
+      kv('Frames stored per second', T.fps.toFixed(1)+' fps') +
+      kv('Frames', T.n) +
+      kv('Video length', T.sec.toFixed(2)+' s') +
+      kv('Frame spacing', uneven ? 'changes: '+T.fpsLo.toFixed(1)+' to '+T.fpsHi.toFixed(1)+' fps' : 'even ('+(1000/T.fps).toFixed(1)+' ms)') +
+      (uneven ? T.runs.slice(0,8).map(r=>kv(r.t0.toFixed(2)+' to '+r.t1.toFixed(2)+' s', r.n+' frames, '+r.ms.toFixed(2)+' ms apart')).join('') : '');
+    if(T.fps>=90){
+      $('slVerdict').innerHTML='<b>The phone kept the fast frames with their real times.</b> One second of this video is one second of real time, so no stretch is needed.';
+      slSetF(1, 'The file stores '+T.fps.toFixed(0)+' frames per second, so the times are already real.');
+    } else {
+      $('slVerdict').innerHTML='<b>Time is stretched in the slow part.</b> The file plays only '+T.fps.toFixed(0)+' frames per second, '+
+        'but the phone filmed '+S.slowSet+' per second. The middle of the video plays slower than real life, '+
+        'and the first and last 1 to 3 seconds play at normal speed.';
+      slSetF(guess, STRETCH_WHY);
+    }
+  }
+  slVid.src=url; slVid.load();
+  slVid.onloadedmetadata=()=>{ slSeekTo(Math.min(0.05, slVid.duration*0.02)); };
+}
+function slSeekTo(t){
+  const d=slVid.duration||0; if(!d) return;
+  t=Math.max(0, Math.min(d-0.001, t)); slVid.currentTime=t;
+  $('slSeek').value=Math.round(1000*t/d); $('slT').textContent='video '+t.toFixed(3)+' s';
+}
+$('slSeek').oninput = e=>slSeekTo((+e.target.value/1000)*(slVid.duration||0));
+$('slPrev').onclick = ()=>slSeekTo(slVid.currentTime-slStep);
+$('slNext').onclick = ()=>slSeekTo(slVid.currentTime+slStep);
+/* 스톱워치 읽은 값: '3.25', '0:03.25', '1:02:03.25' 모두 받는다 */
+function swSec(s){ s=(s||'').trim().replace(',', '.'); if(!s) return NaN;
+  return s.split(':').reduce((a,p)=>a*60+parseFloat(p), 0); }
+function slCalc(){
+  const a=swSec($('slSwA').value), b=swSec($('slSwB').value);
+  if(slA==null||slB==null||!isFinite(a)||!isFinite(b)){ $('slCal').textContent='Set A and B, and type both stopwatch readings.'; return; }
+  const dv=Math.abs(slB-slA), dr=Math.abs(b-a);
+  if(dv<0.2||dr<=0){ $('slCal').textContent='Pick two moments further apart.'; return; }
+  const F=dv/dr;
+  $('slCal').innerHTML='Video moved <b>'+dv.toFixed(3)+' s</b>, the stopwatch moved <b>'+dr.toFixed(3)+' s</b>. '+
+    'Stretch = '+dv.toFixed(3)+' &divide; '+dr.toFixed(3)+' = <b>'+F.toFixed(2)+'&times;</b>';
+  slSetF(F, 'Measured with your stopwatch (A to B).');
+}
+$('slMarkA').onclick=()=>{ slA=slVid.currentTime; $('slTA').textContent='video '+slA.toFixed(3)+' s'; slCalc(); };
+$('slMarkB').onclick=()=>{ slB=slVid.currentTime; $('slTB').textContent='video '+slB.toFixed(3)+' s'; slCalc(); };
+$('slSwA').oninput=slCalc; $('slSwB').oninput=slCalc;
+$('slGo').onclick=()=>{
+  const F=+$('slF').value; if(!(F>=1&&F<=64)){ toast('Type a stretch between 1 and 64.','warn'); return; }
+  S.slowF=F; slVid.pause(); loadVideo(S.slowUrl);
+};
+
+const probe = document.createElement('video');
+probe.playsInline=true; probe.muted=true; probe.preload='auto';
+probe.setAttribute('playsinline',''); probe.setAttribute('muted','');
+/* iOS Safari 는 문서에 없는 <video> 의 프레임을 캔버스로 안 넘겨 준다.
+   display:none 도 같은 이유로 안 된다. 1 px 투명 요소로 문서에 붙여 둔다. */
+probe.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1';
+document.body.appendChild(probe);
+
+function loadVideo(url, presetRoi){
+  if(S.url && S.url.indexOf('blob:')===0) { try{URL.revokeObjectURL(S.url);}catch(e){} }
+  S.url=url; S.det=[]; S.tracks=[]; S.allTracks=[]; S.roi=[]; S.H=null; S.lenEst=null; S.lenUser=null;
+  S.shakePx=null; S.shakeSat=false;
+  toast('Reading the video&hellip;');
+  probe.src=url;
+  probe.onloadedmetadata=()=>{
+    S.vw=probe.videoWidth; S.vh=probe.videoHeight; S.dur=probe.duration;
+    if(!S.vw||!S.vh){ toast('This file did not open as a video. Please record again.','bad'); return; }
+    if(!isFinite(S.dur)||S.dur<=0) S.dur=S.recDur||0;   // 앱 녹화 webm 은 길이가 Infinity 로 온다 -> 잰 녹화 시간
+    seekTo(probe, Math.min(0.05, (S.dur||1)*0.02)).then(()=>{
+      const cv=document.createElement('canvas'); cv.width=S.vw; cv.height=S.vh;
+      cv.getContext('2d').drawImage(probe,0,0,S.vw,S.vh);
+      S.frame0=cv; S.roi = presetRoi ? presetRoi.slice() : [];
+      show('roi'); roiUI();
+      if(presetRoi) toast('Demo: the four corners are already placed. Drag them if you like, then tap <b>Find ducks</b>.');
+    }).catch(()=>toast('Your phone could not step through this video frame by frame. Try a shorter video.','bad'));
+  };
+  probe.onerror=()=>toast(presetRoi ? 'Could not load the demo video. Check the internet connection.' : 'Could not read the video file.','bad');
+  probe.load();
+}
+
+/* 한 프레임으로 이동하고 그려질 때까지 기다린다 */
+function seekTo(v, t){
+  return new Promise((res,rej)=>{
+    let done=false;
+    /* seeked 가 떠도 iOS 에서는 새 장면이 아직 안 그려져 있을 수 있다. 한 박자 기다린다. */
+    const ok=()=>{ if(done) return; done=true; v.removeEventListener('seeked',ok); clearTimeout(tm);
+                   requestAnimationFrame(()=>requestAnimationFrame(res)); };
+    const tm=setTimeout(()=>{ if(done) return; done=true; v.removeEventListener('seeked',ok); rej(new Error('seek timeout')); }, 4000);
+    v.addEventListener('seeked',ok);
+    try{ v.currentTime = Math.max(0, Math.min(t, (v.duration||1e9)-0.01)); }
+    catch(e){ clearTimeout(tm); rej(e); }
+  });
+}
+
+/* ---------------------------------------------------------------- 네 귀퉁이 찍기 */
+const roiCv=$('roiCv'); let roiCtx=roiCv.getContext('2d'); let roiFitK=1, roiOx=0, roiOy=0;
+const ROI_LABEL=[ 'the <b>left wall</b>, on the <b>far side</b>', 'the <b>right wall</b>, on the <b>far side</b>',
+                  'the <b>right wall</b>, on the <b>near side</b>', 'the <b>left wall</b>, on the <b>near side</b>' ];
+function roiFit(){
+  const r=roiCv.parentElement.getBoundingClientRect();
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  roiCv.width=Math.round(r.width*dpr); roiCv.height=Math.round(r.height*dpr);
+  roiCtx=roiCv.getContext('2d');
+  const k=Math.min(roiCv.width/S.vw, roiCv.height/S.vh);
+  roiFitK=k; roiOx=(roiCv.width-S.vw*k)/2; roiOy=(roiCv.height-S.vh*k)/2;
+}
+function roiDraw(){
+  if(!S.frame0) return;
+  const c=roiCtx; c.setTransform(1,0,0,1,0,0);
+  c.fillStyle='#0a0c10'; c.fillRect(0,0,roiCv.width,roiCv.height);
+  c.drawImage(S.frame0, roiOx, roiOy, S.vw*roiFitK, S.vh*roiFitK);
+  const P=S.roi.map(p=>({x:roiOx+p.x*roiFitK, y:roiOy+p.y*roiFitK}));
+  if(P.length>=2){
+    c.strokeStyle='#22d3ee'; c.lineWidth=3; c.beginPath();
+    c.moveTo(P[0].x,P[0].y); for(let i=1;i<P.length;i++) c.lineTo(P[i].x,P[i].y);
+    if(P.length===4) c.closePath();
+    c.stroke();
+  }
+  P.forEach((p,i)=>{
+    c.fillStyle='#ef4444'; c.beginPath(); c.arc(p.x,p.y,11,0,7); c.fill();
+    c.strokeStyle='#fff'; c.lineWidth=2.5; c.stroke();
+    c.fillStyle='#fff'; c.font='bold 14px system-ui'; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText(String(i+1), p.x, p.y+0.5);
+  });
+}
+function roiUI(){
+  const n=S.roi.length;
+  $('roiHud').textContent = n+' / 4';
+  $('roiHint').innerHTML = n<4 ? ('Tap where the water meets '+ROI_LABEL[n]+'.')
+                               : 'All four points are in. Check that the light blue outline wraps the channel well.';
+  $('roiGo').disabled = n<4;
+  geomUpdate();
+  $('roiLenBox').style.display = n===4 ? '' : 'none';
+  if(n===4 && S.lenUser==null && S.lenEst) $('roiLenIn').value = Math.round(S.lenEst);
+}
+$('roiLenIn').oninput=()=>{
+  const v=parseFloat($('roiLenIn').value);
+  S.lenUser = (isFinite(v) && v>=5 && v<=1000) ? v : null;
+  geomUpdate();
+};
+function roiPt(ev){
+  const r=roiCv.getBoundingClientRect();
+  const t=(ev.touches&&ev.touches[0])||ev;
+  const dx=(t.clientX-r.left)*(roiCv.width/r.width);
+  const dy=(t.clientY-r.top )*(roiCv.height/r.height);
+  return { x:(dx-roiOx)/roiFitK, y:(dy-roiOy)/roiFitK };
+}
+let roiDrag=-1;
+function roiDown(ev){
+  ev.preventDefault();
+  const p=roiPt(ev);
+  for(let i=0;i<S.roi.length;i++){
+    if(Math.hypot(S.roi[i].x-p.x, S.roi[i].y-p.y) < 30/roiFitK){ roiDrag=i; return; }
+  }
+  if(S.roi.length<4){ S.roi.push(p); roiDrag=S.roi.length-1; roiDraw(); roiUI(); }
+}
+function roiMove(ev){
+  if(roiDrag<0) return; ev.preventDefault();
+  const p=roiPt(ev);
+  S.roi[roiDrag]={x:Math.max(0,Math.min(S.vw,p.x)), y:Math.max(0,Math.min(S.vh,p.y))};
+  roiDraw();
+  if(S.roi.length===4) roiUI();
+}
+function roiUp(){ roiDrag=-1; }
+roiCv.addEventListener('touchstart',roiDown,{passive:false});
+roiCv.addEventListener('touchmove', roiMove,{passive:false});
+roiCv.addEventListener('touchend',  roiUp);
+roiCv.addEventListener('mousedown', roiDown);
+roiCv.addEventListener('mousemove', roiMove);
+window.addEventListener('mouseup',  roiUp);
+$('roiUndo').onclick=()=>{ S.roi.pop(); roiDraw(); roiUI(); };
+$('roiReset').onclick=()=>{ S.roi=[]; S.lenUser=null; $('roiLenIn').value=''; roiDraw(); roiUI(); };
+$('roiGo').onclick=()=>{ runAnalysis(); };
+window.addEventListener('resize',()=>{ if(curScreen()==='roi'){ roiFit(); roiDraw(); } if(curScreen()==='result') rsFit(); if(curScreen()==='check'){ckFit();ckDraw();} });
+
+/* 네 귀퉁이 기하 (v1.014): 네 점 = 실제로는 31 cm x L cm 직사각형.
+   p0 먼쪽-왼, p1 먼쪽-오, p2 가까운쪽-오, p3 가까운쪽-왼.
+   homography H 로 화면 픽셀을 위에서 내려다본 지도(cm)로 편다. 가로·세로 원근을 모두 바로잡는다. */
+function solveH(src, dst){
+  const A=[];
+  for(let i=0;i<4;i++){
+    const x=src[i].x, y=src[i].y, X=dst[i].x, Y=dst[i].y;
+    A.push([x,y,1,0,0,0,-x*X,-y*X,X]);
+    A.push([0,0,0,x,y,1,-x*Y,-y*Y,Y]);
+  }
+  for(let c=0;c<8;c++){                       // 부분 피벗 가우스 소거
+    let piv=c; for(let r=c+1;r<8;r++) if(Math.abs(A[r][c])>Math.abs(A[piv][c])) piv=r;
+    if(Math.abs(A[piv][c])<1e-12) return null;
+    const t=A[c]; A[c]=A[piv]; A[piv]=t;
+    for(let r=0;r<8;r++){ if(r===c) continue; const f=A[r][c]/A[c][c];
+      if(f) for(let k=c;k<9;k++) A[r][k]-=f*A[c][k]; }
+  }
+  const h=[]; for(let i=0;i<8;i++) h.push(A[i][8]/A[i][i]); h.push(1);
+  return h;
+}
+function applyH(h,x,y){
+  const w=h[6]*x+h[7]*y+h[8];
+  return {x:(h[0]*x+h[1]*y+h[2])/w, y:(h[3]*x+h[4]*y+h[5])/w, w:w};
+}
+/* 자른 구간의 길이(cm) 추정. Zhang & He (2007) 직사각형 종횡비 공식.
+   초점거리 f 를 사각형 자체에서 구하고, 못 구하면(카메라가 수로 가운데를 볼 때 흔함)
+   폰 기본 렌즈 값(긴 변의 0.75배)을 쓴다. */
+function estLength(P, vw, vh, widthCm){
+  const f0=0.75*Math.max(vw,vh), u=vw/2, v=vh/2;
+  const m=q=>[q.x-u, q.y-v, 1];
+  const cr=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const dt=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const m1=m(P[0]), m2=m(P[1]), m3=m(P[3]), m4=m(P[2]);  // m1-m2 = 가로(31 cm), m1-m3 = 길이
+  const k2=dt(cr(m1,m4),m3)/dt(cr(m2,m4),m3), k3=dt(cr(m1,m4),m2)/dt(cr(m3,m4),m2);
+  if(!isFinite(k2)||!isFinite(k3)) return null;
+  const n2=m2.map((x,i)=>k2*x-m1[i]), n3=m3.map((x,i)=>k3*x-m1[i]);
+  let f=f0, fEst=null;
+  const den=n2[2]*n3[2];
+  if(Math.abs(den)>1e-9){
+    const f2=-(n2[0]*n3[0]+n2[1]*n3[1])/den;
+    if(f2>0){ fEst=Math.sqrt(f2); if(fEst>0.4*f0 && fEst<2.5*f0) f=fEst; }
+  }
+  const a2=(n2[0]*n2[0]+n2[1]*n2[1])/(f*f)+n2[2]*n2[2];
+  const a3=(n3[0]*n3[0]+n3[1]*n3[1])/(f*f)+n3[2]*n3[2];
+  if(!(a2>0&&a3>0)) return null;
+  const L=widthCm/Math.sqrt(a2/a3);
+  return isFinite(L)&&L>0 ? L : null;
+}
+function secLen(){ return S.lenUser || S.lenEst || S.widthCm*3; }
+function geomUpdate(){
+  if(S.roi.length<4){ S.H=null; return; }
+  S.lenEst = estLength(S.roi, S.vw, S.vh, S.widthCm);
+  const L=secLen(), W=S.widthCm;
+  S.H = solveH(S.roi, [{x:0,y:0},{x:W,y:0},{x:W,y:L},{x:0,y:L}]);
+  S.Hinv = solveH([{x:0,y:0},{x:W,y:0},{x:W,y:L},{x:0,y:L}], S.roi);   // 지도(cm) -> 화면
+  if(S.H){ const c=S.roi.reduce((a,p)=>({x:a.x+p.x/4,y:a.y+p.y/4}),{x:0,y:0});
+           S.Hsign = Math.sign(applyH(S.H,c.x,c.y).w) || 1; }
+}
+function toW(p){ return S.H ? applyH(S.H,p.x,p.y) : null; }
+/* v1.016: 0 으로 바꿈. 수직 촬영 영상(2026-10-02)에서 벽에 붙어 흐르는 오리(분홍 오리 포함)의 중심이
+   찍은 벽선에서 1 cm 안쪽에 있어 1.5 cm 여유를 두면 통째로 잘렸다. 수직으로 찍으면 유리 반사도 거의 없다. */
+/* v1.018: -3 cm (= 찍은 벽선 바깥 3 cm 까지 인정). 위에서 보면 벽(유리+그림자)이 두꺼운 띠로 보여서
+   벽에 붙어 흐르는 오리의 중심이 그 띠 위에 올라간다 (Streakline 영상에서 오리 2마리가 여기서 사라졌다). */
+const WALL_MARGIN=-3;
+function inChannel(x,y){
+  if(!S.H) return true;
+  const w=applyH(S.H,x,y);
+  if(Math.sign(w.w)!==S.Hsign) return false; // 지평선 너머 점이 사각형 안으로 접혀 들어오는 것 방지
+  return w.x>WALL_MARGIN && w.x<S.widthCm-WALL_MARGIN && w.y>0 && w.y<secLen();
+}
+/* 화면 1 px^2 가 실제 몇 cm^2 인지 (그 자리의 homography 야코비안) */
+function cm2PerPx2(x,y){
+  if(!S.H) return 0;
+  const a=applyH(S.H,x,y), b=applyH(S.H,x+1,y), c=applyH(S.H,x,y+1);
+  return Math.abs((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x));
+}
+
+/* ---------------------------------------------------------------- 검출기 */
+/* 오리는 "쨍한" 노랑이고 플룸 바닥은 "바랜" 누런색이다.
+   실측: 오리 채도 175~211, 바닥 채도 63~115. 그래서 색상이 아니라 채도로 가른다. */
+/* 문턱값을 숫자로 박아 두면 안 된다. 브라우저마다 영상 디코더의 색 변환이 달라서
+   같은 영상이라도 채도가 통째로 눌려 나온다. 실측: 채도가 0.5배로 눌리면 고정
+   문턱값 145 는 오리를 0마리 찾는다. 그래서 문턱을 이 영상 자체에서 정한다.
+   규칙: 수로 안에서 가장 쨍한 상위 1% 가 오리다. (실측으로 p99 가 가장 안정적) */
+function autoSat(img, W, H, k){
+  const d=img.data, hist=new Uint32Array(256); let tot=0;
+  for(let y=0;y<H;y+=2) for(let x=0;x<W;x+=2){
+    if(!inChannel(x/k, y/k)) continue;
+    const p=(y*W+x)*4, r=d[p], g=d[p+1], b=d[p+2];
+    const M=r>g?(r>b?r:b):(g>b?g:b); if(M<40) continue;
+    const m=r<g?(r<b?r:b):(g<b?g:b);
+    hist[Math.round((M-m)*255/M)]++; tot++;
+  }
+  if(tot<400) return null;
+  const q=f=>{ let a=0; for(let i=0;i<256;i++){ a+=hist[i]; if(a>=tot*f) return i; } return 255; };
+  const p50=q(0.5), p99=q(0.99);
+  /* 바닥 중앙값의 1.35배보다는 높게 잡는다. 오리가 아예 없을 때 잡티를 줍지 않도록. */
+  return { S:Math.max(40, Math.min(220, Math.max(p99, Math.round(p50*1.35)))),
+           V:50, p50:p50, p99:p99, tot:tot };
+}
+const SENS_MULT=[1.15, 1.0, 0.80];          // 둔감 / 보통 / 민감
+
+function detectFrame(img, W, H, th, stat){
+  const d=img.data, n=W*H;
+  const mask=new Uint8Array(n);
+  for(let i=0,p=0;i<n;i++,p+=4){
+    const r=d[p], g=d[p+1], b=d[p+2];
+    const mx=r>g?(r>b?r:b):(g>b?g:b);
+    if(mx<th.V){ continue; }
+    const mn=r<g?(r<b?r:b):(g<b?g:b);
+    const dl=mx-mn; if(dl===0) continue;
+    const sat=dl*255/mx; if(sat<(th.pink ? th.P : th.S)) continue;
+    let h;                                   // 0..360
+    if(mx===r)      h=60*(((g-b)/dl)%6);
+    else if(mx===g) h=60*(((b-r)/dl)+2);
+    else            h=60*(((r-g)/dl)+4);
+    if(h<0) h+=360;
+    /* 실험마다 오리 색이 하나다 (현제님 지시, v1.016): Pathline = 분홍 1마리, 나머지 = 노랑.
+       분홍 오리는 노랑보다 채도가 낮다 (실측 중앙값 101, 노랑 문턱 ~117). 바닥은 분홍이 아니므로
+       분홍 모드에서는 문턱을 0.6 배(th.P)로 낮춰도 바닥을 줍지 않는다. */
+    if(th.pink){ if(!(h>=285 || h<10)) continue; }
+    else       { if(!(h>=10 && h<=92)) continue; }
+    mask[i]=1;
+    if(stat) stat[i]++;
+  }
+  // 연결 요소 (4-이웃 BFS)
+  const seen=new Uint8Array(n), stack=new Int32Array(n);
+  const out=[]; const areaMin=Math.max(8, 0.00012*n), areaMax=0.02*n;
+  for(let i=0;i<n;i++){
+    if(!mask[i]||seen[i]) continue;
+    let sp=0; stack[sp++]=i; seen[i]=1;
+    let cnt=0,sx=0,sy=0,x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+    while(sp){
+      const q=stack[--sp], qx=q%W, qy=(q-qx)/W;
+      cnt++; sx+=qx; sy+=qy;
+      if(qx<x0)x0=qx; if(qx>x1)x1=qx; if(qy<y0)y0=qy; if(qy>y1)y1=qy;
+      if(qx>0   && mask[q-1] && !seen[q-1]){ seen[q-1]=1; stack[sp++]=q-1; }
+      if(qx<W-1 && mask[q+1] && !seen[q+1]){ seen[q+1]=1; stack[sp++]=q+1; }
+      if(qy>0   && mask[q-W] && !seen[q-W]){ seen[q-W]=1; stack[sp++]=q-W; }
+      if(qy<H-1 && mask[q+W] && !seen[q+W]){ seen[q+W]=1; stack[sp++]=q+W; }
+    }
+    if(cnt<areaMin||cnt>areaMax) continue;
+    const bw=x1-x0+1, bh=y1-y0+1;
+    if(Math.max(bw,bh)/Math.max(1,Math.min(bw,bh)) > 3.0) continue;   // 길쭉한 것(레일, 테이프) 제외
+    out.push({x:sx/cnt, y:sy/cnt, a:cnt, wi:Math.round(sy/cnt)*W+Math.round(sx/cnt)});
+  }
+  return out;
+}
+
+/* 흔들림: 두 회색 이미지 사이 평행이동을 완전탐색으로 찾는다 */
+function grayOf(cv, W, H){
+  const t=document.createElement('canvas'); t.width=W; t.height=H;
+  const x=t.getContext('2d'); x.drawImage(cv,0,0,W,H);
+  const d=x.getImageData(0,0,W,H).data;
+  const g=new Float32Array(W*H);
+  for(let i=0,p=0;i<W*H;i++,p+=4) g[i]=(d[p]*0.299+d[p+1]*0.587+d[p+2]*0.114);
+  return g;
+}
+function bestShift(a,b,W,H,R){
+  let best=1e18, bx=0, by=0;
+  const m=R+2;
+  for(let dy=-R;dy<=R;dy++) for(let dx=-R;dx<=R;dx++){
+    let s=0,c=0;
+    for(let y=m;y<H-m;y+=2) for(let x=m;x<W-m;x+=2){
+      const v=a[y*W+x]-b[(y+dy)*W+(x+dx)]; s+=v*v; c++;
+    }
+    s/=c; if(s<best){ best=s; bx=dx; by=dy; }
+  }
+  return Math.hypot(bx,by);
+}
+
+/* ---------------------------------------------------------------- 분석 */
+let runAbort=false;
+$('runCancel').onclick=()=>{ runAbort=true; show('shoot'); };
+
+async function runAnalysis(){
+  runAbort=false; show('run');
+  const c=CONCEPTS[S.concept]||{secs:10};
+  /* 짧은 영상은 촘촘히(최대 초당 24장), 긴 영상은 최대 180장. 장애물 뒤 오리는 빨라서 초당 12장이면 놓친다. */
+  const FPS_T=Math.max(8, Math.min(24, 180/Math.max(1,(S.dur>0?S.dur:10))));
+  const dur = S.dur>0 ? S.dur : (c.secs||10);
+  const N   = Math.max(6, Math.min(180, Math.round(dur*FPS_T)));
+  const dt  = dur/N;
+
+  // 처리 해상도: 가로세로 큰 쪽을 480 으로
+  const k   = Math.min(1, 480/Math.max(S.vw,S.vh));
+  const W   = Math.max(32, Math.round(S.vw*k)), H = Math.max(32, Math.round(S.vh*k));
+  const wc  = document.createElement('canvas'); wc.width=W; wc.height=H;
+  const wx  = wc.getContext('2d', {willReadFrequently:true});
+
+  const det=[]; let gFirst=null, gLast=null;
+  geomUpdate();
+  const stat=new Uint16Array(W*H);              // 픽셀마다 '오리 색'이었던 프레임 수
+  const gw=120, gh=Math.max(20, Math.round(120*H/W));
+
+  // 첫 장면의 수로 안쪽만 보고 이 영상에 맞는 채도 문턱값을 정한다
+  $('progTxt').textContent='Setting a color threshold for this video';
+  try{ await seekTo(probe, 0); }catch(e){}
+  wx.drawImage(probe,0,0,W,H);
+  const A = autoSat(wx.getImageData(0,0,W,H), W, H, k);
+  const MULT = SENS_MULT[S.sens]!=null ? SENS_MULT[S.sens] : 1;
+  S.thr  = A ? {S:Math.max(35, Math.round(A.S*MULT)), V:A.V}
+             : {S:Math.round(145*MULT), V:65};
+  S.thr.P = Math.max(45, Math.round(S.thr.S*0.6));     // 분홍 오리용 (채도 낮음)
+  S.thr.pink = (S.concept==='path');                  // Pathline 만 분홍 오리
+  S.diag = A ? {th:S.thr.S, p50:A.p50, p99:A.p99, auto:true}
+             : {th:S.thr.S, auto:false};
+
+  for(let i=0;i<N;i++){
+    if(runAbort) return;
+    const t=Math.min(dur-0.02, i*dt);
+    try{ await seekTo(probe, t); }
+    catch(e){ toast('Your phone gave up stepping through the video at '+t.toFixed(1)+' s. '+
+                    'Try a shorter video.','bad'); show('shoot'); return; }
+    wx.drawImage(probe,0,0,W,H);
+    const img=wx.getImageData(0,0,W,H);
+    const pts=detectFrame(img,W,H,S.thr,stat)
+      .map(p=>({x:p.x/k, y:p.y/k, a:p.a/(k*k), wi:p.wi}))
+      .filter(p=>inChannel(p.x,p.y))
+      .filter(p=>{ if(!S.H) return true;            // 오리 크기 (실제 면적) 1.5 ~ 500 cm^2
+                   const cm2=p.a*cm2PerPx2(p.x,p.y); return cm2>=1.5 && cm2<=500; });
+    det.push({t, pts});
+    if(i===0 || i===N-1){
+      const g=document.createElement('canvas'); g.width=W; g.height=H;
+      g.getContext('2d').drawImage(probe,0,0,W,H);
+      const gg=grayOf(g,gw,gh);
+      if(i===0) gFirst=gg; else gLast=gg;
+    }
+    const f=(i+1)/N;
+    $('progBar').style.width=(f*100).toFixed(0)+'%';
+    $('progTxt').textContent = 'Frame '+(i+1)+' of '+N+'  ·  ducks found so far: '+
+        det.reduce((s,d)=>s+d.pts.length,0);
+    if(i%3===0) await new Promise(r=>setTimeout(r,0));
+  }
+  /* 영상 내내 노란 자리 = 안 움직이는 물체 (테이프, 바닥 무늬, 벽에 붙은 것). 거치했으니 이렇게 걸러진다.
+     프레임의 60% 이상에서 '오리 색'이었던 픽셀에 중심이 있는 검출은 버린다. */
+  const sThr=Math.max(3, Math.ceil(0.6*N)); let nStatic=0;
+  det.forEach(fr=>{ const before=fr.pts.length;
+    fr.pts=fr.pts.filter(p=>!(p.wi!=null && stat[p.wi]>=sThr)); nStatic+=before-fr.pts.length; });
+  S.nStatic=nStatic;
+  S.det=det;
+
+  // 흔들림 (원본 픽셀 기준으로 환산)
+  if(gFirst&&gLast){
+    try{ const R=24, sh=bestShift(gFirst,gLast,gw,gh,R);
+         S.shakePx = sh*(S.vw/gw); S.shakeSat = (sh>=R-0.5); }
+    catch(e){ S.shakePx=null; }
+  }
+
+  buildTracks();
+  /* v1.018: 먼저 결과(오리 이동)를 보여 준다. 고치고 싶으면 결과 화면에서 확인 화면으로 간다. */
+  fillCheck();
+  S.tracks = S.allTracks.filter(t=>!t.off);
+  if(S.tracks.length){ fillResult(); show('result'); } else show('check');
+}
+
+function buildTracks(){
+  /* v1.016: 속도 예측 추적. 장애물 뒤 오리는 한 장마다 50~60 px(약 110 cm/s) 움직여서
+     '직전 위치 근처'만 찾던 옛 방식(문턱 54 px)으로는 하나도 이어지지 않았다.
+     이제 직전 두 점으로 다음 위치를 예측하고 그 근처를 찾는다. 두 번째 점만 넓게 찾는다. */
+  const diag=Math.hypot(S.vw,S.vh), GATE=0.05*diag, GATE0=0.12*diag;
+  const tracks=[];
+  S.det.forEach((fr,i)=>{
+    const used=new Set();
+    tracks.forEach(tr=>{
+      const n=tr.pts.length, last=tr.pts[n-1], gap=i-last.i;
+      if(gap>8) return;
+      let px=last.x, py=last.y, gate=GATE0;
+      if(n>=2){
+        const pr=tr.pts[n-2], di=Math.max(1,last.i-pr.i);
+        px+= (last.x-pr.x)/di*gap; py+= (last.y-pr.y)/di*gap; gate=GATE;
+      }
+      let best=-1, bd=gate;
+      fr.pts.forEach((p,j)=>{
+        if(used.has(j)) return;
+        const d=Math.hypot(p.x-px, p.y-py);
+        if(d<bd){ bd=d; best=j; }
+      });
+      if(best>=0){ const p=fr.pts[best]; tr.pts.push({i,t:fr.t,x:p.x,y:p.y}); used.add(best); }
+    });
+    fr.pts.forEach((p,j)=>{ if(!used.has(j)) tracks.push({pts:[{i,t:fr.t,x:p.x,y:p.y}]}); });
+  });
+  /* 빠른 오리(장애물 뒤)는 화면에 1초도 안 머문다. 최소 6점이면 경로로 인정한다. */
+  /* v1.018: 끊긴 조각 잇기. 한 오리가 몇 장 동안 안 보이면 경로가 두 조각으로 나뉜다.
+     조각 A 가 끝난 뒤 12 장 안에 A 의 속도로 예측한 자리 근처에서 시작한 조각 B 는 같은 오리로 본다. */
+  const G2=0.08*diag;
+  let merged=true;
+  while(merged){
+    merged=false;
+    tracks.sort((a,b)=>a.pts[0].i-b.pts[0].i);
+    for(const A of tracks){
+      if(A.dead) continue;
+      const n=A.pts.length, e=A.pts[n-1], pr=A.pts[Math.max(0,n-3)];
+      const di=Math.max(1,e.i-pr.i), vx=(e.x-pr.x)/di, vy=(e.y-pr.y)/di;
+      let best=null, bd=G2;
+      for(const B of tracks){
+        if(B===A || B.dead) continue;
+        const b0=B.pts[0], gap=b0.i-e.i;
+        if(gap<1 || gap>12) continue;
+        const d=Math.hypot(b0.x-(e.x+vx*gap), b0.y-(e.y+vy*gap));
+        if(d<bd){ bd=d; best=B; }
+      }
+      if(best){ A.pts=A.pts.concat(best.pts); best.dead=true; merged=true; }
+    }
+    for(let k=tracks.length-1;k>=0;k--) if(tracks[k].dead) tracks.splice(k,1);
+  }
+  const all = tracks.filter(t=>t.pts.length>=Math.max(6, Math.round(S.det.length*0.04)));
+  all.sort((a,b)=>a.pts[0].i-b.pts[0].i);
+  /* v1.018 (현제님 기준): 진짜 오리는 반드시 구간을 끝에서 끝까지 통과한다.
+     물 흐름 방향(대부분의 경로가 움직인 방향)으로 구간 길이 L 의 70% 이상 가지 못한 것은
+     오리가 아니라고 보고 미리 빼 둔다 (중간에서 나타났다 사라지는 것, 바닥에 멈춘 것 등).
+     사용자가 확인 화면에서 되살릴 수 있다. 70% 인 이유: 화면 가장자리에서 오리가 반쯤 잘려
+     처음·끝 몇 cm 는 못 찾는다. */
+  const L=secLen();
+  const dys=all.map(t=>{ const a=toW(t.pts[0]), b=toW(t.pts[t.pts.length-1]); return (a&&b)? b.y-a.y : 0; });
+  const dir = dys.reduce((s,v)=>s+v,0) >= 0 ? 1 : -1;
+  S.flowDir = dir;
+  all.forEach((t,n)=>{
+    t.id=n+1;
+    const a=toW(t.pts[0]), b=toW(t.pts[t.pts.length-1]);
+    t.net = (a&&b) ? Math.hypot(b.x-a.x, b.y-a.y) : null;
+    t.along = dys[n]*dir;                         // 흐름 방향으로 간 거리 (cm)
+    t.auto = S.H ? (t.along < 0.7*L) : (t.net!=null && t.net<4);
+    t.off = t.auto;
+  });
+  /* v1.019: 장애물 없는 흐름은 매끈하다. 오리 경로가 지그재그인 것은 검출 중심이 흔들린 탓이다
+     (분홍 오리가 벽 띠에 걸쳐 반쪽만 보이면 중심이 좌우로 튄다). 그래서 장애물이 없을 때는
+     경로를 직선~완만한 곡선(2차식)으로 맞춘다. 장애물이 있으면 실제로 출렁이므로 건드리지 않는다. */
+  if(!S.obs && S.H && S.Hinv) all.forEach(smoothTrack);
+  S.allTracks = all;
+  S.tracks = all.filter(t=>!t.off);
+}
+
+/* 2차식 최소제곱 y = a + b·x + c·x² (x 는 가운데·크기를 맞춰 계산이 안정되게). 튀는 점은 한 번 걸러 다시 맞춘다. */
+function fit2(xs, ys){
+  const n=xs.length, mx=xs.reduce((a,b)=>a+b,0)/n;
+  const sx=Math.max(1e-9, Math.max(...xs.map(v=>Math.abs(v-mx))));
+  const solve=(idx)=>{
+    const M=[[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+    idx.forEach(i=>{ const u=(xs[i]-mx)/sx, r=[1,u,u*u];
+      for(let a=0;a<3;a++){ for(let b=0;b<3;b++) M[a][b]+=r[a]*r[b]; M[a][3]+=r[a]*ys[i]; } });
+    const deg = idx.length>=6 ? 3 : 2;            // 점이 적으면 직선
+    for(let c=0;c<deg;c++){ let pv=c; for(let r=c+1;r<deg;r++) if(Math.abs(M[r][c])>Math.abs(M[pv][c])) pv=r;
+      [M[c],M[pv]]=[M[pv],M[c]]; if(Math.abs(M[c][c])<1e-12) return null;
+      for(let r=0;r<deg;r++){ if(r===c) continue; const f=M[r][c]/M[c][c]; for(let k=c;k<4;k++) M[r][k]-=f*M[c][k]; } }
+    const co=[0,0,0]; for(let c=0;c<deg;c++) co[c]=M[c][3]/M[c][c];
+    return v=>{ const u=(v-mx)/sx; return co[0]+co[1]*u+co[2]*u*u; };
+  };
+  const all=xs.map((_,i)=>i); let f=solve(all); if(!f) return null;
+  const res=all.map(i=>Math.abs(ys[i]-f(xs[i]))), srt=[...res].sort((a,b)=>a-b);
+  const lim=3*1.4826*srt[srt.length>>1]+0.5;
+  const keep=all.filter(i=>res[i]<=lim);
+  if(keep.length>=4 && keep.length<n){ const g=solve(keep); if(g) f=g; }
+  return f;
+}
+/* 지도(cm) 위에서: 흐름 방향 위치 = 시간의 2차식, 가로 위치 = 흐름 방향 위치의 2차식. 그 다음 화면으로 되돌린다. */
+function smoothTrack(t){
+  const Wp=t.pts.map(toW); if(Wp.some(w=>!w) || t.pts.length<4) return;
+  const fy=fit2(t.pts.map(p=>p.t), Wp.map(w=>w.y)); if(!fy) return;
+  const fx=fit2(Wp.map(w=>w.y), Wp.map(w=>w.x)); if(!fx) return;
+  t.raw=t.pts;
+  t.pts=t.pts.map(p=>{ const y=fy(p.t), x=fx(y), q=applyH(S.Hinv,x,y); return {i:p.i,t:p.t,x:q.x,y:q.y}; });
+}
+
+function speeds(){
+  const out=[];
+  S.tracks.forEach((tr,k)=>{
+    const p=tr.pts;
+    for(let s=0;s+2<p.length;s++){
+      const a=p[s], b=p[s+2], dt=b.t-a.t; if(dt<=0) continue;
+      const A=toW(a), B=toW(b); if(!A||!B) continue;
+      /* 슬로모: 영상 시간 dt 는 실제 시간 dt/slowF 이다 -> 속도에 slowF 를 곱한다 */
+      out.push({k, t:(a.t+b.t)/2, v:(S.slowF||1)*Math.hypot(B.x-A.x,B.y-A.y)/dt});
+    }
+  });
+  return out;
+}
+
+/* 유맥선은 투입 자리가 한 곳이다 (v1.008 부터). 오리 전부가 한 무리다.
+   ('3 lines' 는 출발점 셋이 아니라 서로 다른 세 순간의 유맥선이다.) */
+function streakGroups(){
+  return [S.tracks.map((t,k)=>k)];
+}
+/* 투입점이 한 점인지 검사한다 (유맥선일 때만 의미가 있다). 무리 안에서 가장 크게 퍼진 값(cm) */
+function releaseSpread(){
+  if(S.tracks.length<2) return null;
+  let worst=null;
+  streakGroups().forEach(g=>{
+    if(g.length<2) return;
+    const xs=g.map(k=>toW(S.tracks[k].pts[0])).filter(Boolean).map(w=>w.x);
+    if(xs.length<2) return;
+    const v=Math.max(...xs)-Math.min(...xs);
+    if(worst==null || v>worst) worst=v;
+  });
+  return worst;
+}
+
+/* ---------------------------------------------------------------- 검출 확인 */
+const ckCv=$('ckCv'); let ckCtx=ckCv.getContext('2d'), ckK=1, ckOx=0, ckOy=0;
+function ckFit(){
+  const r=ckCv.parentElement.getBoundingClientRect();
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  ckCv.width=Math.round(r.width*dpr); ckCv.height=Math.round(r.height*dpr);
+  ckCtx=ckCv.getContext('2d');
+  ckK=Math.min(ckCv.width/S.vw, ckCv.height/S.vh);
+  ckOx=(ckCv.width-S.vw*ckK)/2; ckOy=(ckCv.height-S.vh*ckK)/2;
+}
+let ckBg=null, ckSel=-1;                      // ckBg = 고른 궤적의 가운데 순간 장면
+function ckDraw(){
+  if(!S.frame0) return;
+  const c=ckCtx; c.setTransform(1,0,0,1,0,0);
+  c.fillStyle='#0a0c10'; c.fillRect(0,0,ckCv.width,ckCv.height);
+  c.drawImage(ckBg||S.frame0, ckOx, ckOy, S.vw*ckK, S.vh*ckK);
+  const P=S.roi.map(p=>({x:ckOx+p.x*ckK,y:ckOy+p.y*ckK}));
+  if(P.length===4){
+    c.strokeStyle='rgba(34,211,238,.85)'; c.lineWidth=2.5; c.beginPath();
+    c.moveTo(P[0].x,P[0].y); P.slice(1).forEach(p=>c.lineTo(p.x,p.y)); c.closePath(); c.stroke();
+  }
+  const X2=p=>ckOx+p.x*ckK, Y2=p=>ckOy+p.y*ckK;
+  S.allTracks.forEach((tr,n)=>{
+    const p=tr.pts, sel=(n===ckSel);
+    c.save();
+    if(tr.off){ c.strokeStyle='rgba(160,160,160,.85)'; c.setLineDash([6,6]); }
+    else c.strokeStyle=TCOL[n%TCOL.length];
+    c.lineWidth = sel ? 6 : 3.5; c.lineJoin='round'; c.lineCap='round';
+    c.beginPath(); c.moveTo(X2(p[0]),Y2(p[0])); for(let i=1;i<p.length;i++) c.lineTo(X2(p[i]),Y2(p[i])); c.stroke();
+    c.setLineDash([]);
+    // 번호표
+    const lx=X2(p[0]), ly=Y2(p[0]);
+    c.fillStyle = tr.off ? '#777' : TCOL[n%TCOL.length];
+    c.beginPath(); c.arc(lx,ly,12,0,7); c.fill();
+    c.strokeStyle='#fff'; c.lineWidth=2; c.stroke();
+    c.fillStyle='#111'; c.font='bold 13px system-ui'; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText(tr.off?'×':String(tr.id), lx, ly+0.5);
+    c.restore();
+  });
+  if(ckSel>=0 && S.allTracks[ckSel]){
+    const tr=S.allTracks[ckSel], q=tr.pts[tr.pts.length>>1];
+    c.strokeStyle='#fff'; c.lineWidth=4; c.beginPath(); c.arc(X2(q),Y2(q), 30, 0, 7); c.stroke();
+    c.strokeStyle='#ef4444'; c.lineWidth=2.5; c.beginPath(); c.arc(X2(q),Y2(q), 30, 0, 7); c.stroke();
+  }
+}
+function ckPick(n){
+  ckSel=n; ckBg=null;
+  const tr=S.allTracks[n];
+  ckUI(); ckDraw();
+  if(!tr) return;
+  const q=tr.pts[tr.pts.length>>1];
+  seekTo(probe, q.t).then(()=>{
+    if(ckSel!==n) return;
+    const cv=document.createElement('canvas'); cv.width=S.vw; cv.height=S.vh;
+    cv.getContext('2d').drawImage(probe,0,0,S.vw,S.vh);
+    ckBg=cv; ckDraw();
+  }).catch(()=>{});
+}
+function ckUI(){
+  const host=$('ckChips'); host.innerHTML='';
+  S.allTracks.forEach((tr,n)=>{
+    const b=document.createElement('button');
+    b.className=(tr.off?'offc':'')+(n===ckSel?' sel':'');
+    b.textContent='#'+tr.id+' '+(tr.off?'✕':'✓');
+    b.onclick=()=>{ if(ckSel===n){ tr.off=!tr.off; ckUI(); ckDraw(); fillCheckStats(); } else ckPick(n); };
+    host.appendChild(b);
+  });
+  const tr=S.allTracks[ckSel];
+  $('ckSelRow').style.display = tr ? '' : 'none';
+  if(tr){
+    $('ckToggle').textContent = (tr.off ? 'Bring back #' : 'Remove #')+tr.id+
+      (tr.auto && tr.off ? ' (did not cross the section)' : '');
+    $('ckToggle').className = 'btn sm' + (tr.off ? '' : ' ghost');
+  }
+}
+$('ckToggle').onclick=()=>{
+  const tr=S.allTracks[ckSel]; if(!tr) return;
+  tr.off=!tr.off; ckUI(); ckDraw(); fillCheckStats();
+};
+function ckTap(ev){
+  if(!S.allTracks.length) return;
+  const r=ckCv.getBoundingClientRect(), t=(ev.changedTouches&&ev.changedTouches[0])||ev;
+  const px=(t.clientX-r.left)*(ckCv.width/r.width), py=(t.clientY-r.top)*(ckCv.height/r.height);
+  const lim=30*(ckCv.width/r.width);
+  let best=-1, bd=lim;
+  S.allTracks.forEach((tr,n)=>tr.pts.forEach(q=>{
+    const d=Math.hypot(ckOx+q.x*ckK-px, ckOy+q.y*ckK-py); if(d<bd){ bd=d; best=n; } }));
+  if(best>=0) ckPick(best);
+}
+ckCv.addEventListener('click', ckTap);
+function kv(k,v){ return '<div class="kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>'; }
+
+function fillCheck(){
+  ckSel=-1; ckBg=null; ckUI();
+  fillCheckStats();
+}
+function fillCheckStats(){
+  S.tracks = S.allTracks.filter(t=>!t.off);
+  const nOff = S.allTracks.length - S.tracks.length;
+  const counts=S.det.map(d=>d.pts.length);
+  const nMed=median(counts), nMax=Math.max(0,...counts);
+  const sp=speeds(), vmed=median(sp.map(s=>s.v));
+  const long=S.tracks.filter(t=>t.pts.length>=S.det.length*0.5).length;
+  const spread=releaseSpread();
+
+  $('ckStats').innerHTML =
+    kv('Ducks visible at once', nMed+' (max '+nMax+')') +
+    kv('Ducks kept', S.tracks.length+(long? ' ('+long+' for over half the video)':'')) +
+    kv('Removed', nOff+' line(s)'+(S.nStatic? ' + '+S.nStatic+' still yellow spots':'')) +
+    kv('Section analyzed', S.widthCm+' × '+Math.round(secLen())+' cm'+(S.lenUser?' (measured)':' (estimated)')) +
+    kv('Frames read', S.det.length+' frames / '+(S.dur||0).toFixed(1)+' s') +
+    kv('Median speed', vmed>0 ? vmed.toFixed(1)+' cm/s' : 'Not enough tracks') +
+    (S.shakePx!=null ? kv('Camera shake',
+        (S.shakeSat?'at least ':'')+S.shakePx.toFixed(0)+' px') : '') +
+    (S.diag ? kv('Color threshold (auto)', S.diag.auto
+        ? 'saturation ≥ '+S.diag.th+' (floor: '+S.diag.p50+')'
+        : 'saturation ≥ '+S.diag.th+' (auto failed, fixed value used)') : '');
+
+  let cls='okbox', msg='';
+  if(nMed===0){
+    cls='badbox'; msg='<b>No ducks were found.</b> Either the four corners do not cover the channel, '+
+      'or the ducks are too small on screen. Tap "higher sensitivity" below, or record from closer.'+
+      (S.diag? ' <br><span style="font-size:12px">(color threshold '+S.diag.th+', floor '+(S.diag.p50||'?')+
+               '. If you send us these two numbers, we can find the cause right away.)</span>':'');
+  } else if(S.tracks.length===0){
+    cls='badbox'; msg='<b>Ducks are visible, but they cannot be tracked.</b> Either the video shook too much, '+
+      'or the ducks move too far between frames. Fix the phone in place and record again.';
+  } else if(S.shakePx!=null && S.shakePx > 0.03*Math.max(S.vw,S.vh)){
+    cls='warnbox'; msg='<b>The camera moved '+(S.shakeSat?'at least ':'')+S.shakePx.toFixed(0)+
+      ' px during the video.</b> Speeds from this video can be off by tens of percent. It is best to fix the phone '+
+      'and record again. You can still look at the shapes.';
+  } else if(S.concept==='streak' && spread!=null && spread > S.widthCm*0.15){
+    cls='warnbox'; msg='<b>The ducks did not start from a single point.</b> Their starting positions are spread '+
+      spread.toFixed(0)+' cm side to side ('+(100*spread/S.widthCm).toFixed(0)+'% of the channel width). '+
+      'Record again without moving your hand side to side, and you will get a proper streakline.';
+  } else if(nMed<2 && S.concept!=='path'){
+    cls='warnbox'; msg='<b>Only '+nMed+' duck(s) visible at once.</b> That is enough to draw one track, but '+
+      'too few to see a '+c2().toLowerCase()+'. Add more ducks and record again.';
+  } else {
+    msg='<b>This video is usable.</b> '+S.tracks.length+' duck(s) were tracked. Go ahead.';
+  }
+  $('ckVerdict').innerHTML = '<div class="note '+cls+'">'+msg+'</div>';
+  $('ckRetry').style.display = (nMed<2 && S.sens<2) ? '' : 'none';
+  $('hdrTtl').textContent = 'Flow Visualization';
+}
+function c2(){ return CONCEPTS[S.concept] ? CONCEPTS[S.concept].name : 'this concept'; }
+$('ckRetry').onclick=()=>{ S.sens=Math.min(2,S.sens+1); toast('Searching again with higher sensitivity.'); runAnalysis(); };
+$('rsFix').onclick=()=>{ stopPlay(); fillCheck(); show('check'); };
+$('ckGo').onclick=()=>{
+  S.tracks = S.allTracks.filter(t=>!t.off);
+  if(!S.tracks.length){ toast('No ducks are kept. Bring at least one back, or record again.','warn'); return; }
+  fillResult(); show('result');
+};
+
+/* ---------------------------------------------------------------- 결과 */
+const rsVid=$('rsVid'), rsCv=$('rsCv');
+let rsCtx=rsCv.getContext('2d'), rsK=1, rsOx=0, rsOy=0, rsTrail=true, rsPlaying=false, rsRAF=0;
+function rsFit(){
+  const r=rsCv.parentElement.getBoundingClientRect();
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  rsCv.width=Math.round(r.width*dpr); rsCv.height=Math.round(r.height*dpr);
+  rsCtx=rsCv.getContext('2d');
+  rsK=Math.min(rsCv.width/S.vw, rsCv.height/S.vh);
+  rsOx=(rsCv.width-S.vw*rsK)/2; rsOy=(rsCv.height-S.vh*rsK)/2;
+  rsDraw();
+}
+const TCOL=['#ffd24d','#4ade80','#60a5fa','#f472b6','#22d3ee','#fb923c','#a78bfa','#f87171'];
+function X(p){ return rsOx+p.x*rsK; }
+function Y(p){ return rsOy+p.y*rsK; }
+
+function fillResult(){
+  const c=CONCEPTS[S.concept];
+  rsVid.src=S.url; rsVid.load();
+  $('rsTtl').textContent = cellName() + ', drawn with my ducks';
+  const sp=speeds(), vmed=median(sp.map(s=>s.v));
+  $('rsStats').innerHTML =
+    kv('Ducks tracked', S.tracks.length) +
+    kv('Median speed', (vmed>0? vmed.toFixed(1):'--')+' cm/s <button class="ibtn" data-info="speed">i</button>') +
+    kv('Slow to fast (10th to 90th pct.)', sp.length? pct(sp.map(s=>s.v),10).toFixed(1)+' to '+pct(sp.map(s=>s.v),90).toFixed(1)+' cm/s':'--') +
+    kv('Channel width used', S.widthCm.toFixed(1)+' cm') +
+    ((S.slowF||1)!==1 ? kv('Slow-motion stretch', '&times;'+S.slowF.toFixed(2)+' (speeds already corrected)') : '');
+  $('rsSoWhat').innerHTML = '<b>So what?</b> ' + c.watch + (S.obs ? OBS_WATCH : '');
+  $('rsLegend').innerHTML =
+    (S.concept==='streak' ? '<span><i style="background:#e02020"></i>Streakline at this instant</span>' : '') +
+    (S.concept==='stream' ? '<span><i style="background:#22d3ee"></i>Velocity arrows</span>' : '') +
+    '<span><i style="background:#ffd24d"></i>Duck trails so far</span>';
+  $('rsTime').value=0;
+  S.done[cellKey(S.concept,S.obs)] = {n:S.tracks.length, v:vmed};
+  rsDraw();
+}
+function curT(){ return (+$('rsTime').value)/1000*(S.dur||1); }
+
+function rsDraw(){
+  if(!S.det.length) return;
+  const c=rsCtx; c.setTransform(1,0,0,1,0,0);
+  c.clearRect(0,0,rsCv.width,rsCv.height);
+  const t=curT(), kind=S.concept;
+
+  // 1) 지나온 자취
+  if(rsTrail){
+    S.tracks.forEach((tr,k)=>{
+      const p=tr.pts.filter(q=>q.t<=t+1e-6);
+      if(p.length<2) return;
+      c.strokeStyle=TCOL[k%TCOL.length]; c.lineWidth=Math.max(2.5,3.2*rsK*(S.vw/720));
+      c.lineJoin='round'; c.lineCap='round';
+      c.globalAlpha = (kind==='stream')? .45 : .95;
+      c.beginPath(); c.moveTo(X(p[0]),Y(p[0]));
+      for(let i=1;i<p.length;i++) c.lineTo(X(p[i]),Y(p[i]));
+      c.stroke();
+      trailArrows(c, p.map(q=>({x:X(q),y:Y(q)})), TCOL[k%TCOL.length], 70*rsK*(S.vw/720), Math.max(9,12*rsK*(S.vw/720)));
+      c.globalAlpha=1;
+    });
+  }
+
+  // 2) 지금 이 순간의 오리
+  const now=[];
+  S.tracks.forEach((tr,k)=>{
+    let best=null, bd=1e9;
+    tr.pts.forEach(q=>{ const d=Math.abs(q.t-t); if(d<bd){ bd=d; best=q; } });
+    if(best && bd < 2.5*((S.dur||1)/Math.max(1,S.det.length))) now.push({k, p:best, tr});
+  });
+  now.forEach(o=>{
+    c.strokeStyle=TCOL[o.k%TCOL.length]; c.lineWidth=3.5;
+    c.beginPath(); c.arc(X(o.p),Y(o.p), 20*rsK*(S.vw/720), 0, 7); c.stroke();
+  });
+
+  // 3) 개념별 덧그림
+  if(kind==='stream'){
+    now.forEach(o=>{
+      const p=o.tr.pts, i=p.indexOf(o.p);
+      const a=p[Math.max(0,i-1)], b=p[Math.min(p.length-1,i+1)];
+      const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy);
+      if(L<0.5) return;
+      const s=Math.min(90, 26+L*3.2)/L;
+      arrow(c, X(o.p), Y(o.p), X(o.p)+dx*s*rsK, Y(o.p)+dy*s*rsK, '#22d3ee', 3.4);
+    });
+  } else if(kind==='streak' && now.length>=2){
+    // 투입 자리마다 따로 한 줄 (최대 3줄)
+    const G=streakGroups(), gOf={};
+    G.forEach((g,gi)=>g.forEach(k=>{ gOf[k]=gi; }));
+    G.forEach((g,gi)=>{
+      const q=now.filter(o=>gOf[o.k]===gi).map(o=>o.p).sort((a,b)=>(a.y-b.y));
+      if(!q.length) return;
+      c.strokeStyle='#e02020'; c.lineWidth=Math.max(3,4.5*rsK*(S.vw/720));
+      c.lineJoin='round'; c.beginPath(); c.moveTo(X(q[0]),Y(q[0]));
+      for(let i=1;i<q.length;i++) c.lineTo(X(q[i]),Y(q[i]));
+      c.stroke();
+      q.forEach(p=>{ c.fillStyle='#e02020'; c.beginPath(); c.arc(X(p),Y(p),6,0,7); c.fill(); });
+    });
+  }
+
+  // 4) 수로 테두리
+  const P=S.roi.map(p=>({x:X(p),y:Y(p)}));
+  if(P.length===4){
+    c.strokeStyle='rgba(34,211,238,.5)'; c.lineWidth=2; c.setLineDash([7,6]);
+    c.beginPath(); c.moveTo(P[0].x,P[0].y); P.slice(1).forEach(p=>c.lineTo(p.x,p.y)); c.closePath();
+    c.stroke(); c.setLineDash([]);
+  }
+  $('rsHud').textContent = t.toFixed(2)+' s  ·  ducks: '+now.length;
+}
+/* 자취 위에 흐르는 방향을 보여 주는 작은 화살촉을 일정 간격(gap, 화면 px)마다 찍는다 */
+function trailArrows(c, P, col, gap, sz){
+  if(P.length<2) return;
+  let acc=gap*0.5;
+  c.fillStyle=col;
+  for(let i=1;i<P.length;i++){
+    const a=P[i-1], b=P[i], L=Math.hypot(b.x-a.x,b.y-a.y); if(L<1e-6) continue;
+    let d=gap-acc;
+    while(d<=L){ const x=a.x+(b.x-a.x)*d/L, y=a.y+(b.y-a.y)*d/L, an=Math.atan2(b.y-a.y,b.x-a.x);
+      c.beginPath(); c.moveTo(x+sz*0.6*Math.cos(an), y+sz*0.6*Math.sin(an));
+      c.lineTo(x-sz*0.6*Math.cos(an)+sz*0.5*Math.cos(an+Math.PI/2), y-sz*0.6*Math.sin(an)+sz*0.5*Math.sin(an+Math.PI/2));
+      c.lineTo(x-sz*0.6*Math.cos(an)-sz*0.5*Math.cos(an+Math.PI/2), y-sz*0.6*Math.sin(an)-sz*0.5*Math.sin(an+Math.PI/2));
+      c.closePath(); c.fill(); d+=gap; }
+    acc=(acc+L)%gap;
+  }
+}
+function arrow(c,x1,y1,x2,y2,col,w){
+  c.strokeStyle=col; c.fillStyle=col; c.lineWidth=w||3; c.lineCap='round';
+  c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
+  const a=Math.atan2(y2-y1,x2-x1), h=9+ (w||3)*1.6;
+  c.beginPath(); c.moveTo(x2,y2);
+  c.lineTo(x2-h*Math.cos(a-0.4), y2-h*Math.sin(a-0.4));
+  c.lineTo(x2-h*Math.cos(a+0.4), y2-h*Math.sin(a+0.4));
+  c.closePath(); c.fill();
+}
+$('rsTime').oninput=()=>{
+  const t=curT();
+  if(rsVid.readyState>=1){ try{ rsVid.currentTime=t; }catch(e){} }
+  rsDraw();
+};
+function stopPlay(){ rsPlaying=false; cancelAnimationFrame(rsRAF); try{rsVid.pause();}catch(e){} $('rsPlay').textContent='Play'; }
+$('rsPlay').onclick=()=>{
+  if(rsPlaying){ stopPlay(); return; }
+  rsPlaying=true; $('rsPlay').textContent='Pause';
+  const dur=S.dur||1;
+  if(curT()>=dur-0.05) $('rsTime').value=0;
+  try{ rsVid.currentTime=curT(); rsVid.play().catch(()=>{}); }catch(e){}
+  const tick=()=>{
+    if(!rsPlaying) return;
+    const t=rsVid.currentTime||0;
+    $('rsTime').value=Math.min(1000, t/dur*1000);
+    rsDraw();
+    if(t>=dur-0.05){ stopPlay(); return; }
+    rsRAF=requestAnimationFrame(tick);
+  };
+  rsRAF=requestAnimationFrame(tick);
+};
+$('rsTrail').onclick=()=>{ rsTrail=!rsTrail; $('rsTrail').textContent='Trails: '+(rsTrail?'on':'off'); rsDraw(); };
+
+/* 결과를 사진 한 장으로 */
+$('rsSave').onclick=async ()=>{
+  const cv=document.createElement('canvas'); cv.width=S.vw; cv.height=S.vh;
+  const c=cv.getContext('2d');
+  c.drawImage(S.frame0,0,0);
+  c.globalAlpha=.45; c.fillStyle='#000'; c.fillRect(0,0,S.vw,S.vh); c.globalAlpha=1;
+  S.tracks.forEach((tr,k)=>{
+    const p=tr.pts; if(p.length<2) return;
+    c.strokeStyle=TCOL[k%TCOL.length]; c.lineWidth=Math.max(3, S.vw/200); c.lineJoin='round';
+    c.beginPath(); c.moveTo(p[0].x,p[0].y); p.slice(1).forEach(q=>c.lineTo(q.x,q.y)); c.stroke();
+    trailArrows(c, p, TCOL[k%TCOL.length], S.vh/9, Math.max(14,S.vw/40));
+  });
+  c.fillStyle='#fff'; c.font='bold '+Math.round(S.vw/22)+'px system-ui';
+  const cc=CONCEPTS[S.concept];
+  c.fillText(cc.name+(S.obs?' (with obstruction)':'')+'  ·  ducks: '+S.tracks.length, 18, Math.round(S.vw/16));
+  const sp=speeds(), vmed=median(sp.map(s=>s.v));
+  if(vmed>0) c.fillText('Median speed '+vmed.toFixed(1)+' cm/s', 18, Math.round(S.vw/16)+Math.round(S.vw/18));
+  const name='Lab4_'+cellKey(S.concept,S.obs)+'_'+Date.now()+'.png';
+  cv.toBlob(blob=>saveBlob(blob, name, 'If it did not save, long-press the image to save it.'),'image/png');
+};
+
+/* 파일 하나를 폰/PC 에 저장한다 (이미지·영상 공용) */
+async function saveBlob(blob, name, hint){
+    /* 아티팩트 뷰어 안에서는 <a download> 가 통째로 막혀 있다.
+       downloads 능력을 쓰고, 그게 없을 때(GitHub Pages·로컬 파일)만 링크로 떨어뜨린다. */
+    if(window.claude && window.claude.use){
+      let dl=null;
+      try{ dl = await window.claude.use('downloads'); }catch(e){ dl=null; }
+      if(dl){
+        try{ await dl.save({filename:name, data:blob}); toast('Saved.'); }
+        catch(err){
+          const cd = err && err.code;
+          if(cd==='declined'){ /* 사용자가 취소한 것이므로 아무 말도 하지 않는다 */ }
+          else if(cd==='rate_limited') toast('A save window is already open. Try again in a moment.','warn');
+          else toast('Saving does not work here. Please take a screenshot.','warn');
+        }
+        return;
+      }
+    }
+    const u=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=u; a.download=name; a.target='_blank';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u), 60000);
+    toast(hint,'warn');
+}
+
+/* 영상 통째로 저장 (v1.020). 영상을 처음부터 한 번 재생하면서, 매 장면마다
+   [원본 장면 + 결과 화면에 그린 자취·화살표·동그라미] 를 한 캔버스에 합쳐 녹화한다.
+   그래서 영상 길이만큼(예: 15 초) 걸린다. 녹화 형식은 기기가 지원하는 것 중 mp4 를 먼저 고른다
+   (iPhone Safari = mp4, 일부 Android/PC Chrome = webm). */
+let rsRecording=false;
+$('rsSaveVid').onclick=async ()=>{
+  if(rsRecording) return;
+  if(!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream){
+    toast('This browser cannot record video. Use <b>Save image</b>, or try Chrome or Safari.','warn'); return;
+  }
+  const types=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  const mime=types.find(t=>{ try{ return MediaRecorder.isTypeSupported(t); }catch(e){ return false; } });
+  if(!mime){ toast('This browser cannot record video. Use <b>Save image</b>.','warn'); return; }
+  stopPlay(); rsRecording=true;
+  const k=Math.min(1, 960/Math.max(S.vw,S.vh));
+  const W=Math.round(S.vw*k/2)*2, H=Math.round(S.vh*k/2)*2;    // 짝수 크기 (인코더 요구)
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const c=cv.getContext('2d');
+  const stream=cv.captureStream(30);
+  let rec; try{ rec=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:4e6}); }
+  catch(e){ rsRecording=false; toast('Could not start recording on this device.','bad'); return; }
+  const chunks=[]; rec.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+  const btns=['rsSave','rsSaveVid','rsPlay','rsFix'].map($);
+  btns.forEach(b=>b.disabled=true);
+  $('rsSaveVid').textContent='Recording…'; $('rsRecBar').style.display='';
+  const dur=S.dur||rsVid.duration||1;
+  const cc=CONCEPTS[S.concept], title=cc.name+(S.obs?' (with obstruction)':'')+'  ·  ducks: '+S.tracks.length;
+  const done=new Promise(res=>{ rec.onstop=res; });
+  try{ rsVid.currentTime=0; }catch(e){}
+  await new Promise(r=>setTimeout(r,250));
+  rec.start(250);
+  try{ await rsVid.play(); }catch(e){}
+  const tick=()=>{
+    const t=rsVid.currentTime||0;
+    $('rsTime').value=Math.min(1000, t/dur*1000);
+    rsDraw();                                         // 결과 화면 캔버스에 덧그림을 그린다
+    c.drawImage(rsVid,0,0,W,H);
+    c.drawImage(rsCv, rsOx, rsOy, S.vw*rsK, S.vh*rsK, 0, 0, W, H);   // 영상 부분만 잘라 겹친다
+    c.fillStyle='rgba(0,0,0,.5)'; c.fillRect(0,0,W,Math.round(H*0.075));
+    c.fillStyle='#fff'; c.font='bold '+Math.round(W/26)+'px system-ui'; c.textBaseline='middle';
+    c.fillText(title+'  ·  '+t.toFixed(1)+' s', 12, Math.round(H*0.0375));
+    $('rsRecFill').style.width=(100*t/dur).toFixed(0)+'%';
+    if(rsVid.ended || t>=dur-0.04){ rec.stop(); return; }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  await done;
+  try{ rsVid.pause(); }catch(e){}
+  rsRecording=false; btns.forEach(b=>b.disabled=false);
+  $('rsSaveVid').textContent='Save video'; $('rsRecBar').style.display='none';
+  const ext=mime.indexOf('mp4')>=0?'mp4':'webm';
+  const blob=new Blob(chunks,{type:mime.split(';')[0]});
+  if(!blob.size){ toast('Recording came out empty. Please try again.','bad'); return; }
+  saveBlob(blob, 'Lab4_'+cellKey(S.concept,S.obs)+'_'+Date.now()+'.'+ext,
+           'If it did not save, open the video, then use Share → Save Video.');
+};
+
+/* ---------------------------------------------------------------- 시작 */
+renderConcepts(); roiUI();
+window.__appReady=true;
+</script>
+</body>
+</html>

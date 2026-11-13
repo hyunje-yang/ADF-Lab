@@ -1,0 +1,198 @@
+<title>ADF Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+  /* CE 319F lab hub — clean engineering utility page */
+  :root {
+    --bg: #f8f9fa;
+    --fg: #1a1a2e;
+    --card-bg: #ffffff;
+    --card-border: #e2e4e8;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --muted: #6b7280;
+    --tag-bg: #eef2ff;
+    --tag-fg: #3b5998;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1117;
+      --fg: #e4e5e9;
+      --card-bg: #1a1c25;
+      --card-border: #2a2d38;
+      --accent: #60a5fa;
+      --accent-hover: #93bbfd;
+      --muted: #9ca3af;
+      --tag-bg: #1e2436;
+      --tag-fg: #93bbfd;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1117;
+    --fg: #e4e5e9;
+    --card-bg: #1a1c25;
+    --card-border: #2a2d38;
+    --accent: #60a5fa;
+    --accent-hover: #93bbfd;
+    --muted: #9ca3af;
+    --tag-bg: #1e2436;
+    --tag-fg: #93bbfd;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .container {
+    max-width: 640px;
+    width: 100%;
+    padding: 48px 0 64px;
+  }
+
+  header {
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .course-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tag-fg);
+    background: var(--tag-bg);
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+
+  .labs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .lab-card {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 24px;
+    text-decoration: none;
+    color: var(--fg);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .lab-card:hover, .lab-card:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--tag-bg);
+    outline: none;
+  }
+
+  .lab-card h2 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lab-card h2 .arrow {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 1.1rem;
+    transition: transform 0.15s;
+  }
+
+  .lab-card:hover h2 .arrow {
+    transform: translateX(3px);
+    color: var(--accent);
+  }
+
+  .lab-card p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .lab-num {
+    font-variant-numeric: tabular-nums;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--tag-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  footer {
+    margin-top: auto;
+    padding: 32px 0 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+</style>
+
+<div class="container">
+  <header>
+    <span class="course-tag">CE 319F Fluid Mechanics</span>
+    <h1>ADF Lab</h1>
+    <p class="subtitle">AI-enabled experiment analysis tools for CE 319F laboratory sessions.</p>
+  </header>
+
+  <div class="labs">
+    <a class="lab-card" href="lab3/">
+      <h2>
+        <span class="lab-num">Lab 3</span>
+        Hydrostatic Pressure
+        <span class="arrow">&rarr;</span>
+      </h2>
+      <p>Part I: Pressure measurement and hydrostatic force analysis on submerged surfaces.</p>
+    </a>
+
+    <a class="lab-card" href="lab4/">
+      <h2>
+        <span class="lab-num">Lab 4</span>
+        Flow Visualization
+        <span class="arrow">&rarr;</span>
+      </h2>
+      <p>Rubber duck tracking for velocity field extraction, streamlines, pathlines, and streaklines.</p>
+    </a>
+  </div>
+</div>
+
+<footer>
+  ADF Lab &middot; The University of Texas at Austin
+</footer>
