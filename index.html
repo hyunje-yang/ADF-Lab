@@ -2,7 +2,6 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
-  /* CE 319F lab hub — card grid with inline SVG illustrations */
   :root {
     --bg: #f5f6f8;
     --fg: #1a1a2e;
@@ -12,12 +11,15 @@
     --muted: #6b7280;
     --tag-bg: #eef2ff;
     --tag-fg: #4361a8;
-    --illust-water: #60a5fa;
-    --illust-water-deep: #2563eb;
-    --illust-duck: #facc15;
-    --illust-duck-beak: #f97316;
-    --illust-plate: #94a3b8;
-    --illust-arrow: #3b82f6;
+    --illust-bg: #f0f4f8;
+    --water: #60a5fa;
+    --water-deep: #2563eb;
+    --metal: #94a3b8;
+    --metal-dark: #64748b;
+    --beam: #e44;
+    --duck-body: #facc15;
+    --duck-beak: #f97316;
+    --arrow: #3b82f6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -29,12 +31,15 @@
       --muted: #8b92a0;
       --tag-bg: #1c2234;
       --tag-fg: #8bb8f8;
-      --illust-water: #3b82c4;
-      --illust-water-deep: #2563a0;
-      --illust-duck: #eab308;
-      --illust-duck-beak: #e5720a;
-      --illust-plate: #64748b;
-      --illust-arrow: #5b9cf0;
+      --illust-bg: #1a1e2a;
+      --water: #3b82c4;
+      --water-deep: #2563a0;
+      --metal: #64748b;
+      --metal-dark: #475569;
+      --beam: #c43;
+      --duck-body: #eab308;
+      --duck-beak: #e5720a;
+      --arrow: #5b9cf0;
       color-scheme: dark;
     }
   }
@@ -47,12 +52,15 @@
     --muted: #8b92a0;
     --tag-bg: #1c2234;
     --tag-fg: #8bb8f8;
-    --illust-water: #3b82c4;
-    --illust-water-deep: #2563a0;
-    --illust-duck: #eab308;
-    --illust-duck-beak: #e5720a;
-    --illust-plate: #64748b;
-    --illust-arrow: #5b9cf0;
+    --illust-bg: #1a1e2a;
+    --water: #3b82c4;
+    --water-deep: #2563a0;
+    --metal: #64748b;
+    --metal-dark: #475569;
+    --beam: #c43;
+    --duck-body: #eab308;
+    --duck-beak: #e5720a;
+    --arrow: #5b9cf0;
     color-scheme: dark;
   }
 
@@ -109,41 +117,51 @@
   .labs {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
   }
 
   .lab-card {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 20px;
-    align-items: center;
+    display: block;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 14px;
-    padding: 20px 24px;
     text-decoration: none;
     color: var(--fg);
+    overflow: hidden;
     transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
   }
 
   .lab-card:hover, .lab-card:focus-visible {
     border-color: var(--accent);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
     transform: translateY(-2px);
     outline: none;
   }
 
   .lab-illust {
-    width: 120px;
-    height: 100px;
-    flex-shrink: 0;
+    width: 100%;
+    height: 180px;
+    background: var(--illust-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .lab-illust svg {
+    max-width: 100%;
+    height: 160px;
+  }
+
+  .lab-info {
+    padding: 20px 24px 22px;
   }
 
   .lab-info h2 {
     font-family: 'Space Grotesk', system-ui, sans-serif;
     font-size: 1.1rem;
     font-weight: 600;
-    margin: 0 0 4px;
+    margin: 0 0 6px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -164,31 +182,22 @@
   .lab-info p {
     color: var(--muted);
     font-size: 0.82rem;
-    margin: 0;
+    margin: 0 0 10px;
     line-height: 1.5;
   }
 
   .lab-arrow {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin-top: 8px;
+    color: var(--accent);
+    font-size: 0.82rem;
     font-weight: 500;
     transition: color 0.15s;
   }
 
-  .lab-card:hover .lab-arrow {
-    color: var(--accent);
-  }
+  .lab-card:hover .lab-arrow { opacity: 0.8; }
 
-  @media (max-width: 480px) {
-    .lab-card {
-      grid-template-columns: 1fr;
-      justify-items: center;
-      text-align: center;
-      padding: 24px 20px;
-      gap: 14px;
-    }
-    .lab-info h2 { justify-content: center; }
+  @media (prefers-reduced-motion: reduce) {
+    .lab-card { transition: none; }
+    .lab-card:hover { transform: none; }
   }
 
   footer {
@@ -197,11 +206,6 @@
     text-align: center;
     color: var(--muted);
     font-size: 0.72rem;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .lab-card { transition: none; }
-    .lab-card:hover { transform: none; }
   }
 </style>
 
@@ -213,73 +217,128 @@
   </header>
 
   <div class="labs">
-    <!-- Lab 3: Hydrostatic Pressure — water pushing on a submerged plate -->
+
+    <!-- ===== Lab 3: Hydrostatic Pressure Apparatus ===== -->
     <a class="lab-card" href="lab3/">
-      <svg class="lab-illust" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <!-- tank water -->
-        <rect x="10" y="30" width="100" height="60" rx="4" fill="var(--illust-water)" opacity="0.18"/>
-        <rect x="10" y="50" width="100" height="40" rx="0 0 4 4" fill="var(--illust-water)" opacity="0.35"/>
-        <!-- submerged plate -->
-        <rect x="52" y="38" width="6" height="48" rx="1.5" fill="var(--illust-plate)" stroke="var(--illust-plate)" stroke-width="0.5"/>
-        <!-- pressure arrows pushing on plate -->
-        <line x1="28" y1="50" x2="48" y2="50" stroke="var(--illust-arrow)" stroke-width="2" stroke-linecap="round"/>
-        <polygon points="48,47 54,50 48,53" fill="var(--illust-arrow)"/>
-        <line x1="24" y1="62" x2="48" y2="62" stroke="var(--illust-arrow)" stroke-width="2" stroke-linecap="round"/>
-        <polygon points="48,59 54,62 48,65" fill="var(--illust-arrow)"/>
-        <line x1="20" y1="74" x2="48" y2="74" stroke="var(--illust-arrow)" stroke-width="2.5" stroke-linecap="round"/>
-        <polygon points="48,70.5 55,74 48,77.5" fill="var(--illust-arrow)"/>
-        <!-- water surface ripple -->
-        <path d="M10 50 Q25 46 40 50 Q55 54 70 50 Q85 46 100 50 Q107 52 110 50" stroke="var(--illust-water-deep)" stroke-width="1.5" fill="none" opacity="0.6"/>
-        <!-- tank outline -->
-        <rect x="10" y="30" width="100" height="60" rx="4" stroke="var(--illust-plate)" stroke-width="1.5" fill="none"/>
-        <!-- label -->
-        <text x="60" y="22" text-anchor="middle" font-family="Space Grotesk, system-ui, sans-serif" font-size="10" font-weight="600" fill="var(--muted)">F = pA</text>
-      </svg>
+      <div class="lab-illust">
+        <svg viewBox="0 0 320 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Tank body -->
+          <rect x="80" y="42" width="140" height="105" rx="3" stroke="var(--metal)" stroke-width="2" fill="none"/>
+          <!-- Water fill -->
+          <rect x="81" y="72" width="138" height="74" rx="0" fill="var(--water)" opacity="0.2"/>
+          <!-- Water surface line -->
+          <line x1="81" y1="72" x2="219" y2="72" stroke="var(--water-deep)" stroke-width="1.5"/>
+          <!-- Water surface triangle marker -->
+          <polygon points="205,68 210,72 200,72" fill="var(--water-deep)" opacity="0.7"/>
+          <!-- Plane surface (curved quarter-circle wall inside tank) -->
+          <path d="M145 42 Q145 110 219 110" stroke="var(--metal-dark)" stroke-width="2.5" fill="none"/>
+          <!-- Plane surface flat face -->
+          <rect x="143" y="70" width="4" height="72" rx="1" fill="var(--metal)" opacity="0.5"/>
+          <!-- Pivot point (top-left of tank, knife edge) -->
+          <circle cx="80" cy="42" r="5" fill="var(--accent)" stroke="var(--card-bg)" stroke-width="1.5"/>
+          <!-- Weight deck / beam -->
+          <rect x="30" y="36" width="230" height="6" rx="2" fill="var(--beam)" opacity="0.85"/>
+          <!-- Knife edge mark -->
+          <polygon points="145,36 148,30 142,30" fill="var(--metal-dark)"/>
+          <text x="148" y="27" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--muted)">knife edge</text>
+          <!-- Weight deck label -->
+          <text x="55" y="27" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--muted)">weight deck</text>
+          <!-- Dimension line (234 mm) -->
+          <line x1="90" y1="50" x2="90" y2="140" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="3 2"/>
+          <text x="93" y="98" font-family="Inter, system-ui, sans-serif" font-size="8" fill="var(--muted)">234 mm</text>
+          <!-- Hanging weight -->
+          <line x1="260" y1="42" x2="260" y2="118" stroke="var(--metal-dark)" stroke-width="1.5"/>
+          <rect x="248" y="118" width="24" height="22" rx="3" fill="var(--metal)" stroke="var(--metal-dark)" stroke-width="1.5"/>
+          <text x="260" y="133" text-anchor="middle" font-family="Space Grotesk, system-ui, sans-serif" font-size="11" font-weight="600" fill="var(--fg)">W</text>
+          <!-- Pressure arrows on plane surface -->
+          <line x1="110" y1="80" x2="138" y2="80" stroke="var(--arrow)" stroke-width="1.5" stroke-linecap="round"/>
+          <polygon points="138,77.5 143,80 138,82.5" fill="var(--arrow)"/>
+          <line x1="106" y1="95" x2="138" y2="95" stroke="var(--arrow)" stroke-width="1.8" stroke-linecap="round"/>
+          <polygon points="138,92 143.5,95 138,98" fill="var(--arrow)"/>
+          <line x1="102" y1="110" x2="138" y2="110" stroke="var(--arrow)" stroke-width="2" stroke-linecap="round"/>
+          <polygon points="138,106.5 144,110 138,113.5" fill="var(--arrow)"/>
+          <!-- Plane surface label -->
+          <text x="170" y="102" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="var(--muted)">plane</text>
+          <text x="170" y="111" font-family="Inter, system-ui, sans-serif" font-size="7.5" fill="var(--muted)">surface</text>
+        </svg>
+      </div>
       <div class="lab-info">
         <h2><span class="lab-num">Lab 3</span> Hydrostatic Pressure</h2>
         <p>Pressure measurement and hydrostatic force analysis on submerged surfaces.</p>
-        <div class="lab-arrow">Open app &rarr;</div>
+        <span class="lab-arrow">Open app &rarr;</span>
       </div>
     </a>
 
-    <!-- Lab 4: Flow Visualization — rubber duck in flowing water -->
+    <!-- ===== Lab 4: Flow Visualization — Rubber Duck ===== -->
     <a class="lab-card" href="lab4/">
-      <svg class="lab-illust" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <!-- water/channel -->
-        <rect x="0" y="52" width="120" height="40" rx="3" fill="var(--illust-water)" opacity="0.2"/>
-        <path d="M0 55 Q15 51 30 55 Q45 59 60 55 Q75 51 90 55 Q105 59 120 55" stroke="var(--illust-water-deep)" stroke-width="1.2" fill="none" opacity="0.5"/>
-        <!-- flow arrows -->
-        <line x1="8" y1="70" x2="28" y2="70" stroke="var(--illust-arrow)" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-        <polygon points="28,68 32,70 28,72" fill="var(--illust-arrow)" opacity="0.5"/>
-        <line x1="8" y1="80" x2="28" y2="80" stroke="var(--illust-arrow)" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
-        <polygon points="28,78 32,80 28,82" fill="var(--illust-arrow)" opacity="0.4"/>
-        <line x1="80" y1="72" x2="100" y2="72" stroke="var(--illust-arrow)" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-        <polygon points="100,70 104,72 100,74" fill="var(--illust-arrow)" opacity="0.5"/>
-        <!-- duck body -->
-        <ellipse cx="55" cy="52" rx="14" ry="10" fill="var(--illust-duck)"/>
-        <!-- duck head -->
-        <circle cx="67" cy="40" r="9" fill="var(--illust-duck)"/>
-        <!-- duck eye -->
-        <circle cx="70" cy="38" r="1.5" fill="var(--fg)"/>
-        <!-- duck beak -->
-        <ellipse cx="77" cy="41" rx="5" ry="2.5" fill="var(--illust-duck-beak)"/>
-        <!-- duck tail -->
-        <path d="M40 48 L34 40 L42 46" fill="var(--illust-duck)" stroke="var(--illust-duck)" stroke-width="1" stroke-linejoin="round"/>
-        <!-- trajectory dashed line -->
-        <path d="M20 52 Q35 48 55 52 Q75 56 100 44" stroke="var(--illust-arrow)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" opacity="0.6"/>
-        <!-- trajectory dots -->
-        <circle cx="20" cy="52" r="2.5" fill="var(--illust-arrow)" opacity="0.4"/>
-        <circle cx="37" cy="49" r="2.5" fill="var(--illust-arrow)" opacity="0.55"/>
-        <circle cx="100" cy="44" r="2.5" fill="var(--illust-arrow)" opacity="0.8"/>
-        <!-- label -->
-        <text x="60" y="16" text-anchor="middle" font-family="Space Grotesk, system-ui, sans-serif" font-size="10" font-weight="600" fill="var(--muted)">x(t), y(t)</text>
-      </svg>
+      <div class="lab-illust">
+        <svg viewBox="0 0 320 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Channel walls -->
+          <rect x="0" y="65" width="320" height="90" rx="0" fill="var(--water)" opacity="0.12"/>
+          <!-- Water surface -->
+          <path d="M0 70 Q20 65 40 70 Q60 75 80 70 Q100 65 120 70 Q140 75 160 70 Q180 65 200 70 Q220 75 240 70 Q260 65 280 70 Q300 75 320 70" stroke="var(--water-deep)" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <!-- Flow arrows (background) -->
+          <g opacity="0.3">
+            <line x1="10" y1="90" x2="40" y2="90" stroke="var(--arrow)" stroke-width="1.2" stroke-linecap="round"/>
+            <polygon points="40,88 45,90 40,92" fill="var(--arrow)"/>
+            <line x1="10" y1="105" x2="35" y2="105" stroke="var(--arrow)" stroke-width="1.2" stroke-linecap="round"/>
+            <polygon points="35,103 40,105 35,107" fill="var(--arrow)"/>
+            <line x1="10" y1="120" x2="30" y2="120" stroke="var(--arrow)" stroke-width="1" stroke-linecap="round"/>
+            <polygon points="30,118.5 34,120 30,121.5" fill="var(--arrow)"/>
+            <line x1="230" y1="88" x2="260" y2="88" stroke="var(--arrow)" stroke-width="1.2" stroke-linecap="round"/>
+            <polygon points="260,86 265,88 260,90" fill="var(--arrow)"/>
+            <line x1="240" y1="108" x2="270" y2="108" stroke="var(--arrow)" stroke-width="1" stroke-linecap="round"/>
+            <polygon points="270,106 275,108 270,110" fill="var(--arrow)"/>
+          </g>
+
+          <!-- === Duck (center, bigger) === -->
+          <!-- Duck body -->
+          <ellipse cx="155" cy="68" rx="28" ry="18" fill="var(--duck-body)"/>
+          <!-- Duck body highlight -->
+          <ellipse cx="150" cy="63" rx="16" ry="9" fill="white" opacity="0.15"/>
+          <!-- Duck tail -->
+          <path d="M126 60 L116 48 L130 58" fill="var(--duck-body)" stroke="var(--duck-body)" stroke-width="1.5" stroke-linejoin="round"/>
+          <!-- Duck neck -->
+          <ellipse cx="178" cy="52" rx="10" ry="14" fill="var(--duck-body)"/>
+          <!-- Duck head -->
+          <circle cx="183" cy="38" r="14" fill="var(--duck-body)"/>
+          <!-- Duck head highlight -->
+          <circle cx="180" cy="34" r="7" fill="white" opacity="0.12"/>
+          <!-- Duck eye -->
+          <circle cx="188" cy="35" r="2.5" fill="var(--fg)"/>
+          <circle cx="189" cy="34" r="0.8" fill="var(--card-bg)"/>
+          <!-- Duck beak -->
+          <ellipse cx="199" cy="40" rx="9" ry="4" fill="var(--duck-beak)"/>
+          <line x1="191" y1="40" x2="207" y2="40" stroke="var(--duck-beak)" stroke-width="0.8" opacity="0.5"/>
+          <!-- Duck wing detail -->
+          <path d="M140 62 Q150 58 162 64" stroke="var(--duck-body)" stroke-width="2" fill="none" opacity="0.4" filter="brightness(0.85)"/>
+
+          <!-- Trajectory path (dashed) -->
+          <path d="M55 72 Q90 60 130 68 Q160 74 190 64 Q220 54 275 48" stroke="var(--arrow)" stroke-width="1.8" stroke-dasharray="6 4" fill="none" opacity="0.5"/>
+          <!-- Trajectory dots -->
+          <circle cx="55" cy="72" r="3.5" fill="var(--arrow)" opacity="0.35"/>
+          <circle cx="90" cy="64" r="3.5" fill="var(--arrow)" opacity="0.45"/>
+          <circle cx="275" cy="48" r="3.5" fill="var(--arrow)" opacity="0.7"/>
+          <!-- Trajectory label -->
+          <text x="278" y="44" font-family="Space Grotesk, system-ui, sans-serif" font-size="10" font-weight="500" fill="var(--arrow)" opacity="0.7">x(t)</text>
+
+          <!-- Small second duck (background, showing multiple tracers) -->
+          <g opacity="0.3" transform="translate(60, 2) scale(0.4)">
+            <ellipse cx="155" cy="68" rx="28" ry="18" fill="var(--duck-body)"/>
+            <path d="M126 60 L116 48 L130 58" fill="var(--duck-body)"/>
+            <circle cx="183" cy="38" r="14" fill="var(--duck-body)"/>
+            <ellipse cx="199" cy="40" rx="9" ry="4" fill="var(--duck-beak)"/>
+            <circle cx="188" cy="35" r="2.5" fill="var(--fg)"/>
+          </g>
+        </svg>
+      </div>
       <div class="lab-info">
         <h2><span class="lab-num">Lab 4</span> Flow Visualization</h2>
         <p>Rubber duck tracking for velocity field extraction, streamlines, pathlines, and streaklines.</p>
-        <div class="lab-arrow">Open app &rarr;</div>
+        <span class="lab-arrow">Open app &rarr;</span>
       </div>
     </a>
+
   </div>
 </div>
 
